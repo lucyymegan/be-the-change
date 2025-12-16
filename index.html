@@ -120,7 +120,7 @@
     const pendingListEl = document.getElementById('pending-list');
 
     let currentUser = null;
-
+  
     // Authentication
     btnSignup.addEventListener('click', async () => {
       try {
@@ -151,8 +151,12 @@
         btnLogout.style.display = 'inline-block';
         submitSection.style.display = 'block';
         // show admin only if UID matches
-        if (user.uid === ADMIN_UID) {
-          adminSection.style.display = 'block';
+        // after auth.onAuthStateChanged sets currentUser:
+        if (user) {
+          db.collection('admins').doc(user.uid).get().then(doc => {
+            if (doc.exists && doc.data().enabled) adminSection.style.display = 'block';
+            else adminSection.style.display = 'none';
+          });
         } else {
           adminSection.style.display = 'none';
         }
