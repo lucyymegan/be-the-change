@@ -144,22 +144,27 @@
       await auth.signOut();
     });
 
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async (user) => {
       currentUser = user;
+
       if (user) {
-        userEmailSpan.textContent = user.email + ' (uid:' + user.uid + ')';
+        userEmailSpan.textContent = user.email;
         btnLogout.style.display = 'inline-block';
         submitSection.style.display = 'block';
-        // show admin only if UID matches
-        // after auth.onAuthStateChanged sets currentUser:
-        if (user) {
-          db.collection('admins').doc(user.uid).get().then(doc => {
-            if (doc.exists && doc.data().enabled) adminSection.style.display = 'block';
-            else adminSection.style.display = 'none';
-          });
-        } else {
+
+        // CHECK ADMIN VIA FIRESTORE
+        try {
+          const adminDoc = await db.collection('admins').doc(user.uid).get();
+          if (adminDoc.exists && adminDoc.data().enabled === true) {
+            adminSection.style.display = 'block';
+          } else {
+            adminSection.style.display = 'none';
+          }
+        } catch (err) {
+          console.error('Admin check failed:', err);
           adminSection.style.display = 'none';
         }
+
       } else {
         userEmailSpan.textContent = 'Not signed in';
         btnLogout.style.display = 'none';
