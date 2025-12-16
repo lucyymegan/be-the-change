@@ -1,53 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>My First Website</title>
-
+  <meta charset="utf-8" />
+  <title>Do-Good Diary — MVP</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 40px auto;
-      line-height: 1.6;
-    }
-
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .counter {
-      font-weight: bold;
-      margin-top: 10px;
-    }
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
+    header { display:flex; justify-content:space-between; align-items:center; }
+    section { border:1px solid #ddd; padding:12px; margin-top:16px; border-radius:6px; }
+    label { display:block; margin-top:8px; }
+    input, textarea, select { width:100%; padding:8px; margin-top:4px; box-sizing:border-box; }
+    button { margin-top:8px; padding:8px 12px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    .small { font-size:0.9em; color:#555; }
+    .entry { border-bottom:1px solid #eee; padding:8px 0; }
+    .tag { display:inline-block; background:#eef; padding:2px 8px; border-radius:10px; margin-left:8px; font-size:0.85em; }
+    .admin { background:#fff7e6; }
+    .counts { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+    .count-card { padding:8px 12px; border-radius:6px; border:1px solid #ddd; }
   </style>
 </head>
-
 <body>
-  <h1>My First Website</h1>
+  <header>
+    <h1>Do-Good Diary — MVP</h1>
+    <div id="auth-area" class="small">
+      <span id="user-email">Not signed in</span>
+      <button id="btn-logout" style="display:none">Log out</button>
+    </div>
+  </header>
 
-  <p>
-    This page is written in HTML, styled with CSS, and made interactive with JavaScript.
-  </p>
+  <!-- Authentication -->
+  <section id="auth-section">
+    <strong>Sign up / Log in (Email)</strong>
+    <div class="row">
+      <div style="flex:1 1 260px">
+        <label>Email<input id="email" type="email" /></label>
+        <label>Password<input id="password" type="password" /></label>
+        <button id="btn-signup">Sign up</button>
+        <button id="btn-login">Log in</button>
+      </div>
+      <div style="flex:1 1 260px">
+        <div class="small">After signing up, record the UID shown in console (or in user management in Firebase) and paste it into the ADMIN_UID variable in this file to enable the admin panel for that account.</div>
+      </div>
+    </div>
+  </section>
 
-  <button id="btn">Click me</button>
+  <!-- Submit form -->
+  <section id="submit-section" style="display:none">
+    <strong>Submit something you did</strong>
+    <label>Short description<textarea id="entry-text" rows="3" placeholder="What did you do?"></textarea></label>
+    <label>Tag
+      <select id="entry-tag">
+        <option value="environment">Environment</option>
+        <option value="charity">Charity</option>
+        <option value="community">Community</option>
+        <option value="kindness">Kindness</option>
+        <option value="other">Other</option>
+      </select>
+    </label>
+    <button id="btn-submit">Submit (goes to pending)</button>
+    <div id="submit-status" class="small"></div>
+  </section>
 
-  <p class="counter">
-    Button clicked <span id="count">0</span> times
-  </p>
+  <!-- Dashboard (approved items) -->
+  <section id="dashboard-section">
+    <strong>Dashboard — approved entries</strong>
+    <div class="small">Total approved: <span id="total-count">0</span></div>
+    <div class="counts" id="tag-counts"></div>
+    <div id="approved-list"></div>
+  </section>
+
+  <!-- Admin panel -->
+  <section id="admin-section" style="display:none" class="admin">
+    <strong>Admin panel — pending submissions</strong>
+    <div id="pending-list" class="small"></div>
+  </section>
+
+  <!-- Firebase SDKs (compat for simplicity) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    let count = 0;
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZi3WI84OKkzUADIRH-oYwgy_xSHZU-OE",
+      authDomain: "be-the-change-bd30d.firebaseapp.com",
+      projectId: "be-the-change-bd30d",
+      storageBucket: "be-the-change-bd30d.firebasestorage.app",
+      messagingSenderId: "627286973176",
+      appId: "1:627286973176:web:f8d5580c9dc29f4bb8790d",
+      measurementId: "G-0TVCHS9DVV"
+    };
 
-    const button = document.getElementById("btn");
-    const countSpan = document.getElementById("count");
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    button.addEventListener("click", () => {
-      count += 1;
-      countSpan.textContent = count;
+    // UI refs
+    const emailEl = document.getElementById('email');
+    const pwEl = document.getElementById('password');
+    const btnSignup = document.getElementById('btn-signup');
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
+    const userEmailSpan = document.getElementById('user-email');
+
+    const submitSection = document.getElementById('submit-section');
+    const btnSubmit = document.getElementById('btn-submit');
+    const entryText = document.getElementById('entry-text');
+    const entryTag = document.getElementById('entry-tag');
+    const submitStatus = document.getElementById('submit-status');
+
+    const approvedListEl = document.getElementById('approved-list');
+    const totalCountEl = document.getElementById('total-count');
+    const tagCountsEl = document.getElementById('tag-counts');
+
+    const adminSection = document.getElementById('admin-section');
+    const pendingListEl = document.getElementById('pending-list');
+
+    let currentUser = null;
+
+    // Authentication
+    btnSignup.addEventListener('click', async () => {
+      try {
+        const userCred = await auth.createUserWithEmailAndPassword(emailEl.value.trim(), pwEl.value);
+        console.log('Signed up UID:', userCred.user.uid);
+        alert('Signed up. Check console for UID if you need to set ADMIN_UID.');
+      } catch (err) {
+        alert('Signup error: ' + err.message);
+      }
     });
+
+    btnLogin.addEventListener('click', async () => {
+      try {
+        await auth.signInWithEmailAndPassword(emailEl.value.trim(), pwEl.value);
+      } catch (err) {
+        alert('Login error: ' + err.message);
+      }
+    });
+
+    btnLogout.addEventListener('click', async () => {
+      await auth.signOut();
+    });
+
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+      if (user) {
+        userEmailSpan.textContent = user.email + ' (uid:' + user.uid + ')';
+        btnLogout.style.display = 'inline-block';
+        submitSection.style.display = 'block';
+        // show admin only if UID matches
+        if (user.uid === ADMIN_UID) {
+          adminSection.style.display = 'block';
+        } else {
+          adminSection.style.display = 'none';
+        }
+      } else {
+        userEmailSpan.textContent = 'Not signed in';
+        btnLogout.style.display = 'none';
+        submitSection.style.display = 'none';
+        adminSection.style.display = 'none';
+      }
+    });
+
+    // Submit an entry -> writes a document with status 'pending'
+    btnSubmit.addEventListener('click', async () => {
+      const text = entryText.value.trim();
+      const tag = entryTag.value;
+      if (!currentUser) { alert('Please sign in'); return; }
+      if (!text) { alert('Please enter a description'); return; }
+      submitStatus.textContent = 'Submitting...';
+      try {
+        await db.collection('submissions').add({
+          text,
+          tag,
+          uid: currentUser.uid,
+          email: currentUser.email,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          status: 'pending'
+        });
+        entryText.value = '';
+        submitStatus.textContent = 'Submitted (pending approval)';
+      } catch (err) {
+        submitStatus.textContent = 'Error: ' + err.message;
+      }
+    });
+
+    // Real-time listener: approved entries
+    db.collection('submissions')
+      .where('status', '==', 'approved')
+      .orderBy('timestamp', 'desc')
+      .onSnapshot(snapshot => {
+        const items = [];
+        snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+        renderApproved(items);
+      });
+
+    // Real-time listener: pending (for admin)
+    db.collection('submissions')
+      .where('status', '==', 'pending')
+      .orderBy('timestamp', 'asc')
+      .onSnapshot(snapshot => {
+        const items = [];
+        snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+        renderPending(items);
+      });
+
+    // Render approved list + counts
+    function renderApproved(items) {
+      // total
+      totalCountEl.textContent = items.length;
+      // tag counts
+      const counts = {};
+      items.forEach(it => { counts[it.tag] = (counts[it.tag] || 0) + 1; });
+      tagCountsEl.innerHTML = '';
+      for (const [tag, n] of Object.entries(counts)) {
+        const el = document.createElement('div');
+        el.className = 'count-card';
+        el.textContent = `${tag}: ${n}`;
+        tagCountsEl.appendChild(el);
+      }
+      approvedListEl.innerHTML = '';
+      if (items.length === 0) {
+        approvedListEl.textContent = 'No approved entries yet.';
+        return;
+      }
+      items.forEach(it => {
+        const d = document.createElement('div');
+        d.className = 'entry';
+        const time = it.timestamp ? new Date(it.timestamp.seconds * 1000).toLocaleString() : '—';
+        d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div><div class="small">by ${escapeHtml(it.email)} • ${time}</div>`;
+        approvedListEl.appendChild(d);
+      });
+    }
+
+    // Render pending for admin
+    function renderPending(items) {
+      if (!currentUser || currentUser.uid !== ADMIN_UID) {
+        pendingListEl.innerHTML = '<div class="small">No admin access.</div>';
+        return;
+      }
+      if (items.length === 0) {
+        pendingListEl.innerHTML = '<div class="small">No pending submissions.</div>';
+        return;
+      }
+      pendingListEl.innerHTML = '';
+      items.forEach(it => {
+        const d = document.createElement('div');
+        d.className = 'entry';
+        const time = it.timestamp ? new Date(it.timestamp.seconds * 1000).toLocaleString() : '—';
+        d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+                       <div class="small">from ${escapeHtml(it.email)} • ${time}</div>`;
+        const btnApprove = document.createElement('button');
+        btnApprove.textContent = 'Approve';
+        btnApprove.addEventListener('click', () => changeStatus(it.id, 'approved'));
+        const btnReject = document.createElement('button');
+        btnReject.textContent = 'Reject';
+        btnReject.addEventListener('click', () => changeStatus(it.id, 'rejected'));
+        d.appendChild(btnApprove);
+        d.appendChild(btnReject);
+        pendingListEl.appendChild(d);
+      });
+    }
+
+    async function changeStatus(docId, newStatus) {
+      try {
+        await db.collection('submissions').doc(docId).update({ status: newStatus });
+      } catch (err) {
+        alert('Error changing status: ' + err.message);
+      }
+    }
+
+    // Basic HTML escape to show user input safely
+    function escapeHtml(s) {
+      if (!s) return '';
+      return s.replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    }
+
+    // OPTIONAL: limit reads/ writes locally (not a security guarantee)
+    // Note: set Firestore rules in console for proper enforcement.
   </script>
 </body>
 </html>
