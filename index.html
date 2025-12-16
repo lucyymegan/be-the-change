@@ -82,18 +82,15 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     const firebaseConfig = {
-      apiKey: "AIzaSyAZi3WI84OKkzUADIRH-oYwgy_xSHZU-OE",
-      authDomain: "be-the-change-bd30d.firebaseapp.com",
-      projectId: "be-the-change-bd30d",
-      storageBucket: "be-the-change-bd30d.firebasestorage.app",
-      messagingSenderId: "627286973176",
-      appId: "1:627286973176:web:f8d5580c9dc29f4bb8790d",
-      measurementId: "G-0TVCHS9DVV"
+      apiKey: "AIza...",
+      authDomain: "your-project.firebaseapp.com",
+      projectId: "your-project-id",
+      storageBucket: "your-project-id.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -246,32 +243,37 @@
 
     // Render pending for admin
     function renderPending(items) {
-      if (!currentUser || currentUser.uid !== ADMIN_UID) {
-        pendingListEl.innerHTML = '<div class="small">No admin access.</div>';
-        return;
-      }
-      if (items.length === 0) {
-        pendingListEl.innerHTML = '<div class="small">No pending submissions.</div>';
-        return;
-      }
-      pendingListEl.innerHTML = '';
-      items.forEach(it => {
-        const d = document.createElement('div');
-        d.className = 'entry';
-        const time = it.timestamp ? new Date(it.timestamp.seconds * 1000).toLocaleString() : '—';
-        d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
-                       <div class="small">from ${escapeHtml(it.email)} • ${time}</div>`;
-        const btnApprove = document.createElement('button');
-        btnApprove.textContent = 'Approve';
-        btnApprove.addEventListener('click', () => changeStatus(it.id, 'approved'));
-        const btnReject = document.createElement('button');
-        btnReject.textContent = 'Reject';
-        btnReject.addEventListener('click', () => changeStatus(it.id, 'rejected'));
-        d.appendChild(btnApprove);
-        d.appendChild(btnReject);
-        pendingListEl.appendChild(d);
-      });
-    }
+  // Only show pending list if user is signed in and adminSection is visible
+  // (adminSection visibility is set during auth.onAuthStateChanged using Firestore)
+  if (!currentUser || getComputedStyle(adminSection).display === 'none') {
+    pendingListEl.innerHTML = '<div class="small">No admin access.</div>';
+    return;
+  }
+
+  if (items.length === 0) {
+    pendingListEl.innerHTML = '<div class="small">No pending submissions.</div>';
+    return;
+  }
+
+  pendingListEl.innerHTML = '';
+    items.forEach(it => {
+      const d = document.createElement('div');
+      d.className = 'entry';
+      const time = it.timestamp ? new Date(it.timestamp.seconds * 1000).toLocaleString() : '—';
+      d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+                    <div class="small">from ${escapeHtml(it.email)} • ${time}</div>`;
+      const btnApprove = document.createElement('button');
+      btnApprove.textContent = 'Approve';
+      btnApprove.addEventListener('click', () => changeStatus(it.id, 'approved'));
+      const btnReject = document.createElement('button');
+      btnReject.textContent = 'Reject';
+      btnReject.addEventListener('click', () => changeStatus(it.id, 'rejected'));
+      d.appendChild(btnApprove);
+      d.appendChild(btnReject);
+      pendingListEl.appendChild(d);
+    });
+  }
+
 
     async function changeStatus(docId, newStatus) {
       try {
