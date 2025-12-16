@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Do-Good Diary — MVP</title>
+  <title>Be The Change: Be part of something bigger — MVP</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
@@ -156,6 +156,18 @@
           const adminDoc = await db.collection('admins').doc(user.uid).get();
           if (adminDoc.exists && adminDoc.data().enabled === true) {
             adminSection.style.display = 'block';
+            try {
+              // immediate one-time fetch to ensure admin UI populates right away
+              const snap = await db.collection('submissions')
+                .where('status', '==', 'pending')
+                .orderBy('timestamp', 'asc')
+                .get();
+              const items = [];
+              snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+              renderPending(items);
+            } catch (err) {
+              console.error('Immediate pending fetch failed:', err);
+            }
           } else {
             adminSection.style.display = 'none';
           }
