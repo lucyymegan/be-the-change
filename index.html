@@ -1,13 +1,53 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>My First Website</title>
-  </head>
-  <body>
-    <h1>Hello</h1>
-    <p>This is my first website.</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My First Website</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      line-height: 1.6;
+    }
+
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .counter {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>My First Website</h1>
+
+  <p>
+    This page is written in HTML, styled with CSS, and made interactive with JavaScript.
+  </p>
+
+  <button id="btn">Click me</button>
+
+  <p class="counter">
+    Button clicked <span id="count">0</span> times
+  </p>
+
+  <script>
+    let count = 0;
+
+    const button = document.getElementById("btn");
+    const countSpan = document.getElementById("count");
+
+    button.addEventListener("click", () => {
+      count += 1;
+      countSpan.textContent = count;
+    });
+  </script>
+</body>
 </html>
-
-
-
