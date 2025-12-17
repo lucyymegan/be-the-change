@@ -18,6 +18,13 @@
     .admin { background:#fff7e6; }
     .counts { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
     .count-card { padding:8px 12px; border-radius:6px; border:1px solid #ddd; }
+    /* layout */
+    .layout { display:grid; grid-template-columns: 1fr 260px; gap:24px; }
+    .profile-card { border:1px solid #ddd; border-radius:8px; padding:12px; background:#fafafa; }
+    .profile-card img { width:100%; max-width:120px; height:auto; border-radius:50%; display:block; margin-bottom:8px; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -29,86 +36,85 @@
     </div>
   </header>
 
-  <!-- Creating right-hand pane -->
-  <div class="layout" style="display:grid;grid-template-columns:1fr 260px;gap:24px;">
+  <!-- Layout: main content + right-hand profile summary -->
+  <div class="layout">
     <main class="main-content">
-      <!-- keep your existing sections (dashboard, submit, profile-section, admin, etc.) here -->
+      <!-- Authentication -->
+      <section id="auth-section">
+        <strong>Sign up / Log in (Email)</strong>
+        <div class="row">
+          <div style="flex:1 1 260px">
+            <label>Email<input id="email" type="email" /></label>
+            <label>Password<input id="password" type="password" /></label>
+            <button id="btn-signup">Sign up</button>
+            <button id="btn-login">Log in</button>
+          </div>
+          <div style="flex:1 1 260px">
+            <div class="small">After signing up, record the UID shown in console (or in user management in Firebase) and create an admins/{UID} document with enabled=true in Firestore to enable the admin panel for that account.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Submit form -->
+      <section id="submit-section" style="display:none">
+        <strong>Submit something you did</strong>
+        <label>Short description<textarea id="entry-text" rows="3" placeholder="What did you do?"></textarea></label>
+        <label>Tag
+          <select id="entry-tag">
+            <option value="environment">Environment</option>
+            <option value="charity">Charity</option>
+            <option value="community">Community</option>
+            <option value="kindness">Kindness</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <button id="btn-submit">Submit (goes to pending)</button>
+        <div id="submit-status" class="small"></div>
+      </section>
+
+      <!-- Dashboard (approved items) -->
+      <section id="dashboard-section">
+        <strong>Dashboard — approved entries</strong>
+        <div class="small">Total approved: <span id="total-count">0</span></div>
+        <div class="counts" id="tag-counts"></div>
+        <div id="approved-list"></div>
+      </section>
+
+      <!-- Profile section (full) -->
+      <section id="profile-section" style="display:none">
+        <strong>My profile</strong>
+        <div>
+          <label>Display name<input id="profile-name" type="text"/></label>
+          <label>Bio<textarea id="profile-bio" rows="3"></textarea></label>
+          <label>Avatar URL<input id="profile-avatar" type="url" placeholder="https://..." /></label>
+          <button id="btn-save-profile">Save profile</button>
+          <div id="profile-save-status" class="small"></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <strong>My submissions</strong>
+          <div id="my-submissions-list" class="small">Loading…</div>
+        </div>
+      </section>
+
+      <!-- Admin panel -->
+      <section id="admin-section" style="display:none" class="admin">
+        <strong>Admin panel — pending submissions</strong>
+        <div id="pending-list" class="small"></div>
+      </section>
     </main>
 
+    <!-- Profile summary (right) -->
     <aside id="profile-summary" style="display:none">
-      <div class="profile-card" style="border:1px solid #ddd;border-radius:8px;padding:12px;background:#fafafa">
-        <img id="summary-avatar" src="https://via.placeholder.com/120?text=User" alt="avatar" style="width:100%;max-width:120px;border-radius:50%;display:block;margin-bottom:8px" />
-        <h3 id="summary-name" style="margin:6px 0 4px 0"></h3>
+      <div class="profile-card">
+        <img id="summary-avatar" src="https://via.placeholder.com/120?text=User" alt="avatar" />
+        <h3 id="summary-name"></h3>
         <p id="summary-bio" class="small" style="min-height:40px"></p>
         <div class="small"><strong id="summary-count">0</strong> actions logged</div>
         <a href="#" id="open-profile" style="display:block;margin-top:8px">View full profile →</a>
       </div>
     </aside>
   </div>
-
-  <!-- Authentication -->
-  <section id="auth-section">
-    <strong>Sign up / Log in (Email)</strong>
-    <div class="row">
-      <div style="flex:1 1 260px">
-        <label>Email<input id="email" type="email" /></label>
-        <label>Password<input id="password" type="password" /></label>
-        <button id="btn-signup">Sign up</button>
-        <button id="btn-login">Log in</button>
-      </div>
-      <div style="flex:1 1 260px">
-        <div class="small">After signing up, record the UID shown in console (or in user management in Firebase) and create an admins/{UID} document with enabled=true in Firestore to enable the admin panel for that account.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Submit form -->
-  <section id="submit-section" style="display:none">
-    <strong>Submit something you did</strong>
-    <label>Short description<textarea id="entry-text" rows="3" placeholder="What did you do?"></textarea></label>
-    <label>Tag
-      <select id="entry-tag">
-        <option value="environment">Environment</option>
-        <option value="charity">Charity</option>
-        <option value="community">Community</option>
-        <option value="kindness">Kindness</option>
-        <option value="other">Other</option>
-      </select>
-    </label>
-    <button id="btn-submit">Submit (goes to pending)</button>
-    <div id="submit-status" class="small"></div>
-  </section>
-
-  <!-- Dashboard (approved items) -->
-  <section id="dashboard-section">
-    <strong>Dashboard — approved entries</strong>
-    <div class="small">Total approved: <span id="total-count">0</span></div>
-    <div class="counts" id="tag-counts"></div>
-    <div id="approved-list"></div>
-  </section>
-
-  <!-- Profile section -->
-  <section id="profile-section" style="display:none">
-    <strong>My profile</strong>
-    <div>
-      <label>Display name<input id="profile-name" type="text"/></label>
-      <label>Bio<textarea id="profile-bio" rows="3"></textarea></label>
-      <label>Avatar URL<input id="profile-avatar" type="url" placeholder="https://..." /></label>
-      <button id="btn-save-profile">Save profile</button>
-      <div id="profile-save-status" class="small"></div>
-    </div>
-
-    <div style="margin-top:12px">
-      <strong>My submissions</strong>
-      <div id="my-submissions-list" class="small">Loading…</div>
-    </div>
-  </section>
-
-  <!-- Admin panel -->
-  <section id="admin-section" style="display:none" class="admin">
-    <strong>Admin panel — pending submissions</strong>
-    <div id="pending-list" class="small"></div>
-  </section>
 
   <!-- Firebase SDKs (compat for simplicity) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -161,6 +167,14 @@
     const adminSection = document.getElementById('admin-section');
     const pendingListEl = document.getElementById('pending-list');
 
+    // Profile summary UI refs (RIGHT-HAND PANEL)
+    const profileSummary = document.getElementById('profile-summary');
+    const summaryName = document.getElementById('summary-name');
+    const summaryBio = document.getElementById('summary-bio');
+    const summaryAvatar = document.getElementById('summary-avatar');
+    const summaryCount = document.getElementById('summary-count');
+    const openProfileLink = document.getElementById('open-profile');
+
     let currentUser = null;
     let mySubmissionsUnsub = null;
 
@@ -208,8 +222,9 @@
         profileSection.style.display = 'block';
 
         // load profile fields and attach real-time listener for user's submissions
-        loadUserProfile();
+        await loadUserProfile();
         attachMySubmissionsListener();
+        loadProfileSummary();
 
         // CHECK ADMIN VIA FIRESTORE and do immediate pending fetch if admin
         try {
@@ -242,6 +257,7 @@
         submitSection.style.display = 'none';
         profileSection.style.display = 'none';
         adminSection.style.display = 'none';
+        if (profileSummary) profileSummary.style.display = 'none';
       }
     });
 
@@ -387,6 +403,33 @@
       }
     }
 
+    async function loadProfileSummary() {
+      if (!currentUser || !profileSummary) return;
+
+      profileSummary.style.display = 'block';
+
+      try {
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const data = userDoc.exists ? userDoc.data() : {};
+
+        summaryName.textContent =
+          data.displayName || currentUser.email.split('@')[0];
+
+        summaryBio.textContent = data.bio || '';
+
+        summaryAvatar.src =
+          data.avatarUrl || 'https://via.placeholder.com/120?text=User';
+
+        const snap = await db.collection('submissions')
+          .where('uid', '==', currentUser.uid)
+          .get();
+
+        summaryCount.textContent = snap.size;
+      } catch (err) {
+        console.error('loadProfileSummary error', err);
+      }
+    }
+
     btnSaveProfile.addEventListener('click', async () => {
       if (!currentUser) { alert('Sign in first'); return; }
       profileSaveStatus.textContent = 'Saving...';
@@ -399,6 +442,8 @@
       try {
         await docRef.set(payload, { merge: true });
         profileSaveStatus.textContent = 'Saved';
+        // refresh sidebar
+        loadProfileSummary();
       } catch (err) {
         console.error('save profile error', err);
         profileSaveStatus.textContent = 'Error saving profile';
@@ -415,9 +460,11 @@
           const items = [];
           snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
           renderMySubmissions(items);
+          // update summary count live
+          if (profileSummary) summaryCount.textContent = items.length;
         }, err => {
           console.error('my submissions onSnapshot error', err);
-          mySubmissionsList.textContent = 'Error loading your submissions';
+          mySubmissionsList.textContent = 'Error loading your submissions: ' + (err && err.message ? err.message : err);
         });
     }
 
@@ -476,6 +523,14 @@
       return s.replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
     }
 
-    // Note: keep Firestore rules server-side properly configured (owners only, admin checks).
+    // open full profile from summary
+    if (openProfileLink) {
+      openProfileLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        profileSection.style.display = 'block';
+        profileSection.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
   </script>
 </body>
+</html>
