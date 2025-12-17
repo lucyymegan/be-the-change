@@ -18,6 +18,11 @@
     .admin { background:#fff7e6; }
     .counts { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
     .count-card { padding:8px 12px; border-radius:6px; border:1px solid #ddd; }
+    .site-title { margin: 0; line-height: 1.2; font-weight: 600; }
+    .profile-card img,
+      #summary-avatar { width: 120px; height: 120px; object-fit: cover; border-radius: 50%;
+      }
+
     /* layout */
     .layout { display:grid; grid-template-columns: 1fr 260px; gap:24px; }
     .profile-card { border:1px solid #ddd; border-radius:8px; padding:12px; background:#fafafa; }
@@ -29,9 +34,8 @@
 </head>
 <body>
   <header>
-      <div padding:100px>
-        <h1>Be The Change: Be part of something bigger — MVP</h1>
-      </div>
+      <h1>Be The Change</h1>
+      <h2>Be part of something bigger</h2>
       <div id="auth-area" class="small">
         <span id="user-email" font-size="em">Not signed in</span>
         <button id="btn-logout" style="display:none">Log out</button>
@@ -59,14 +63,15 @@
 
       <!-- Submit form -->
       <section id="submit-section" style="display:none">
-        <strong>Submit something you did</strong>
-        <label>Short description<textarea id="entry-text" rows="3" placeholder="What did you do?"></textarea></label>
+        <strong>Submit something you've done that's had a positive impact!</strong>
+        <label>Short description<textarea id="entry-text" rows="3" placeholder="How have you had a positive impact recently?"></textarea></label>
         <label>Tag
           <select id="entry-tag">
-            <option value="environment">Environment</option>
             <option value="charity">Charity</option>
             <option value="community">Community</option>
-            <option value="kindness">Kindness</option>
+            <option value="environment">Environment</option>
+            <option value="equality">Equality</option>
+            <option value="self-care">Self-care</option>
             <option value="other">Other</option>
           </select>
         </label>
@@ -147,6 +152,7 @@
     const btnLogin = document.getElementById('btn-login');
     const btnLogout = document.getElementById('btn-logout');
     const userEmailSpan = document.getElementById('user-email');
+    const authSection = document.getElementById('auth-section');
 
     const submitSection = document.getElementById('submit-section');
     const btnSubmit = document.getElementById('btn-submit');
@@ -222,6 +228,8 @@
         btnLogout.style.display = 'inline-block';
         submitSection.style.display = 'block';
         profileSection.style.display = 'block';
+        authSection.style.display = 'none';
+        profileSection.style.display = 'none';
 
         // load profile fields and attach real-time listener for user's submissions
         await loadUserProfile();
@@ -259,6 +267,7 @@
         submitSection.style.display = 'none';
         profileSection.style.display = 'none';
         adminSection.style.display = 'none';
+        authSection.style.display = 'block';
         if (profileSummary) profileSummary.style.display = 'none';
       }
     });
@@ -419,8 +428,8 @@
 
         summaryBio.textContent = data.bio || '';
 
-        summaryAvatar.src =
-          data.avatarUrl || 'https://via.placeholder.com/120?text=User';
+        summaryAvatar.src = data.avatarUrl || 'https://via.placeholder.com/120?text=User';
+        summaryAvatar.onerror = () => summaryAvatar.src = 'https://via.placeholder.com/120?text=User';
 
         const snap = await db.collection('submissions')
           .where('uid', '==', currentUser.uid)
