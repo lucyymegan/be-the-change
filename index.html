@@ -40,7 +40,7 @@
         <button id="btn-login">Log in</button>
       </div>
       <div style="flex:1 1 260px">
-        <div class="small">After signing up, record the UID shown in console (or in user management in Firebase) and paste it into the ADMIN_UID variable in this file to enable the admin panel for that account.</div>
+        <div class="small">After signing up, record the UID shown in console (or in user management in Firebase) and create an admins/{UID} document with enabled=true in Firestore to enable the admin panel for that account.</div>
       </div>
     </div>
   </section>
@@ -99,7 +99,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    // ---------- CONFIG ----------
     const firebaseConfig = {
       apiKey: "AIzaSyAZi3WI84OKkzUADIRH-oYwgy_xSHZU-OE",
       authDomain: "be-the-change-bd30d.firebaseapp.com",
@@ -109,6 +109,7 @@
       appId: "1:627286973176:web:f8d5580c9dc29f4bb8790d",
       measurementId: "G-0TVCHS9DVV"
     };
+    // ----------------------------
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -132,17 +133,26 @@
     const totalCountEl = document.getElementById('total-count');
     const tagCountsEl = document.getElementById('tag-counts');
 
+    const profileSection = document.getElementById('profile-section');
+    const profileNameEl = document.getElementById('profile-name');
+    const profileBioEl = document.getElementById('profile-bio');
+    const profileAvatarEl = document.getElementById('profile-avatar');
+    const btnSaveProfile = document.getElementById('btn-save-profile');
+    const profileSaveStatus = document.getElementById('profile-save-status');
+    const mySubmissionsList = document.getElementById('my-submissions-list');
+
     const adminSection = document.getElementById('admin-section');
     const pendingListEl = document.getElementById('pending-list');
 
     let currentUser = null;
-  
-    // Authentication
+    let mySubmissionsUnsub = null;
+
+    // Authentication handlers
     btnSignup.addEventListener('click', async () => {
       try {
         const userCred = await auth.createUserWithEmailAndPassword(emailEl.value.trim(), pwEl.value);
         console.log('Signed up UID:', userCred.user.uid);
-        alert('Signed up. Check console for UID if you need to set ADMIN_UID.');
+        alert('Signed up. Check console for UID; create admins/{UID} in Firestore for admin access.');
       } catch (err) {
         alert('Signup error: ' + err.message);
       }
@@ -157,24 +167,40 @@
     });
 
     btnLogout.addEventListener('click', async () => {
-      await auth.signOut();
+      try {
+        await auth.signOut();
+      } catch (e) {
+        console.error('Logout failed', e);
+      }
     });
 
+    // Auth state change: show/hide UI and attach per-user listeners
     auth.onAuthStateChanged(async (user) => {
       currentUser = user;
+
+      // cleanup previous per-user listener
+      if (mySubmissionsUnsub) {
+        mySubmissionsUnsub();
+        mySubmissionsUnsub = null;
+      }
 
       if (user) {
         userEmailSpan.textContent = user.email;
         btnLogout.style.display = 'inline-block';
         submitSection.style.display = 'block';
+        profileSection.style.display = 'block';
 
-        // CHECK ADMIN VIA FIRESTORE
+        // load profile fields and attach real-time listener for user's submissions
+        loadUserProfile();
+        attachMySubmissionsListener();
+
+        // CHECK ADMIN VIA FIRESTORE and do immediate pending fetch if admin
         try {
           const adminDoc = await db.collection('admins').doc(user.uid).get();
           if (adminDoc.exists && adminDoc.data().enabled === true) {
             adminSection.style.display = 'block';
+            // immediate one-time fetch to ensure admin UI populates right away
             try {
-              // immediate one-time fetch to ensure admin UI populates right away
               const snap = await db.collection('submissions')
                 .where('status', '==', 'pending')
                 .orderBy('timestamp', 'asc')
@@ -197,6 +223,7 @@
         userEmailSpan.textContent = 'Not signed in';
         btnLogout.style.display = 'none';
         submitSection.style.display = 'none';
+        profileSection.style.display = 'none';
         adminSection.style.display = 'none';
       }
     });
@@ -207,6 +234,9 @@
       const tag = entryTag.value;
       if (!currentUser) { alert('Please sign in'); return; }
       if (!text) { alert('Please enter a description'); return; }
+      if (text.length > 1000) { alert('Text too long'); return; }
+
+      btnSubmit.disabled = true;
       submitStatus.textContent = 'Submitting...';
       try {
         await db.collection('submissions').add({
@@ -221,6 +251,8 @@
         submitStatus.textContent = 'Submitted (pending approval)';
       } catch (err) {
         submitStatus.textContent = 'Error: ' + err.message;
+      } finally {
+        btnSubmit.disabled = false;
       }
     });
 
@@ -232,6 +264,8 @@
         const items = [];
         snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
         renderApproved(items);
+      }, err => {
+        console.error('approved onSnapshot error', err);
       });
 
     // Real-time listener: pending (for admin)
@@ -242,13 +276,13 @@
         const items = [];
         snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
         renderPending(items);
+      }, err => {
+        console.error('pending onSnapshot error', err);
       });
 
     // Render approved list + counts
     function renderApproved(items) {
-      // total
       totalCountEl.textContent = items.length;
-      // tag counts
       const counts = {};
       items.forEach(it => { counts[it.tag] = (counts[it.tag] || 0) + 1; });
       tagCountsEl.innerHTML = '';
@@ -275,7 +309,6 @@
     // Render pending for admin
     function renderPending(items) {
       // Only show pending list if user is signed in and adminSection is visible
-      // (adminSection visibility is set during auth.onAuthStateChanged using Firestore)
       if (!currentUser || getComputedStyle(adminSection).display === 'none') {
         pendingListEl.innerHTML = '<div class="small">No admin access.</div>';
         return;
@@ -287,24 +320,23 @@
       }
 
       pendingListEl.innerHTML = '';
-        items.forEach(it => {
-          const d = document.createElement('div');
-          d.className = 'entry';
-          const time = it.timestamp ? new Date(it.timestamp.seconds * 1000).toLocaleString() : '—';
-          d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
-                        <div class="small">from ${escapeHtml(it.email)} • ${time}</div>`;
-          const btnApprove = document.createElement('button');
-          btnApprove.textContent = 'Approve';
-          btnApprove.addEventListener('click', () => changeStatus(it.id, 'approved'));
-          const btnReject = document.createElement('button');
-          btnReject.textContent = 'Reject';
-          btnReject.addEventListener('click', () => changeStatus(it.id, 'rejected'));
-          d.appendChild(btnApprove);
-          d.appendChild(btnReject);
-          pendingListEl.appendChild(d);
-        });
-      }
-
+      items.forEach(it => {
+        const d = document.createElement('div');
+        d.className = 'entry';
+        const time = it.timestamp ? new Date(it.timestamp.seconds * 1000).toLocaleString() : '—';
+        d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+                       <div class="small">from ${escapeHtml(it.email)} • ${time}</div>`;
+        const btnApprove = document.createElement('button');
+        btnApprove.textContent = 'Approve';
+        btnApprove.addEventListener('click', () => changeStatus(it.id, 'approved'));
+        const btnReject = document.createElement('button');
+        btnReject.textContent = 'Reject';
+        btnReject.addEventListener('click', () => changeStatus(it.id, 'rejected'));
+        d.appendChild(btnApprove);
+        d.appendChild(btnReject);
+        pendingListEl.appendChild(d);
+      });
+    }
 
     async function changeStatus(docId, newStatus) {
       try {
@@ -314,14 +346,119 @@
       }
     }
 
+    // ---------------- Profile: load/save and real-time personal submissions ----------------
+
+    async function loadUserProfile() {
+      if (!currentUser) return;
+      profileSaveStatus.textContent = 'Loading...';
+      try {
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        if (userDoc.exists) {
+          const data = userDoc.data();
+          profileNameEl.value = data.displayName || '';
+          profileBioEl.value = data.bio || '';
+          profileAvatarEl.value = data.avatarUrl || '';
+        } else {
+          profileNameEl.value = currentUser.email.split('@')[0] || '';
+          profileBioEl.value = '';
+          profileAvatarEl.value = '';
+        }
+        profileSaveStatus.textContent = '';
+      } catch (err) {
+        console.error('loadUserProfile error', err);
+        profileSaveStatus.textContent = 'Error loading profile';
+      }
+    }
+
+    btnSaveProfile.addEventListener('click', async () => {
+      if (!currentUser) { alert('Sign in first'); return; }
+      profileSaveStatus.textContent = 'Saving...';
+      const docRef = db.collection('users').doc(currentUser.uid);
+      const payload = {
+        displayName: profileNameEl.value.trim(),
+        bio: profileBioEl.value.trim(),
+        avatarUrl: profileAvatarEl.value.trim()
+      };
+      try {
+        await docRef.set(payload, { merge: true });
+        profileSaveStatus.textContent = 'Saved';
+      } catch (err) {
+        console.error('save profile error', err);
+        profileSaveStatus.textContent = 'Error saving profile';
+      }
+    });
+
+    // Attach a real-time listener for the current user's submissions so edits/deletes appear live
+    function attachMySubmissionsListener() {
+      if (!currentUser) return;
+      mySubmissionsUnsub = db.collection('submissions')
+        .where('uid', '==', currentUser.uid)
+        .orderBy('timestamp', 'desc')
+        .onSnapshot(snapshot => {
+          const items = [];
+          snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+          renderMySubmissions(items);
+        }, err => {
+          console.error('my submissions onSnapshot error', err);
+          mySubmissionsList.textContent = 'Error loading your submissions';
+        });
+    }
+
+    function renderMySubmissions(items) {
+      if (!items || items.length === 0) {
+        mySubmissionsList.textContent = 'You have no submissions yet.';
+        return;
+      }
+      mySubmissionsList.innerHTML = '';
+      items.forEach(it => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'entry';
+        const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+        wrapper.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+                             <div class="small">status: ${escapeHtml(it.status)} • ${time}</div>`;
+        if (it.status === 'pending') {
+          const btnEdit = document.createElement('button');
+          btnEdit.textContent = 'Edit';
+          btnEdit.addEventListener('click', () => editSubmission(it.id, it));
+          const btnDelete = document.createElement('button');
+          btnDelete.textContent = 'Delete';
+          btnDelete.addEventListener('click', () => deleteSubmission(it.id));
+          wrapper.appendChild(btnEdit);
+          wrapper.appendChild(btnDelete);
+        }
+        mySubmissionsList.appendChild(wrapper);
+      });
+    }
+
+    async function editSubmission(docId, data) {
+      const newText = prompt('Edit your text', data.text);
+      if (newText === null) return;
+      const trimmed = newText.trim();
+      if (!trimmed) { alert('Text cannot be empty'); return; }
+      try {
+        await db.collection('submissions').doc(docId).update({ text: trimmed });
+        // real-time listener will refresh the list
+      } catch (err) {
+        alert('Error updating: ' + err.message);
+      }
+    }
+
+    async function deleteSubmission(docId) {
+      if (!confirm('Delete this submission?')) return;
+      try {
+        await db.collection('submissions').doc(docId).delete();
+        // real-time listener will refresh the list
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
+    }
+
     // Basic HTML escape to show user input safely
     function escapeHtml(s) {
       if (!s) return '';
       return s.replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
     }
 
-    // OPTIONAL: limit reads/ writes locally (not a security guarantee)
-    // Note: set Firestore rules in console for proper enforcement.
+    // Note: keep Firestore rules server-side properly configured (owners only, admin checks).
   </script>
 </body>
-</html>
