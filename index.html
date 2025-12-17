@@ -70,6 +70,23 @@
     <div id="approved-list"></div>
   </section>
 
+  <!-- Profile section -->
+  <section id="profile-section" style="display:none">
+    <strong>My profile</strong>
+    <div>
+      <label>Display name<input id="profile-name" type="text"/></label>
+      <label>Bio<textarea id="profile-bio" rows="3"></textarea></label>
+      <label>Avatar URL<input id="profile-avatar" type="url" placeholder="https://..." /></label>
+      <button id="btn-save-profile">Save profile</button>
+      <div id="profile-save-status" class="small"></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <strong>My submissions</strong>
+      <div id="my-submissions-list" class="small">Loading…</div>
+    </div>
+  </section>
+
   <!-- Admin panel -->
   <section id="admin-section" style="display:none" class="admin">
     <strong>Admin panel — pending submissions</strong>
