@@ -29,6 +29,23 @@
     </div>
   </header>
 
+  <!-- Creating right-hand pane -->
+  <div class="layout" style="display:grid;grid-template-columns:1fr 260px;gap:24px;">
+    <main class="main-content">
+      <!-- keep your existing sections (dashboard, submit, profile-section, admin, etc.) here -->
+    </main>
+
+    <aside id="profile-summary" style="display:none">
+      <div class="profile-card" style="border:1px solid #ddd;border-radius:8px;padding:12px;background:#fafafa">
+        <img id="summary-avatar" src="https://via.placeholder.com/120?text=User" alt="avatar" style="width:100%;max-width:120px;border-radius:50%;display:block;margin-bottom:8px" />
+        <h3 id="summary-name" style="margin:6px 0 4px 0"></h3>
+        <p id="summary-bio" class="small" style="min-height:40px"></p>
+        <div class="small"><strong id="summary-count">0</strong> actions logged</div>
+        <a href="#" id="open-profile" style="display:block;margin-top:8px">View full profile →</a>
+      </div>
+    </aside>
+  </div>
+
   <!-- Authentication -->
   <section id="auth-section">
     <strong>Sign up / Log in (Email)</strong>
