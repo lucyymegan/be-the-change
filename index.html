@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Be The Change: Be part of something bigger — MVP</title>
+  <title>Be The Change — MVP</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
-    header { display:flex; justify-content:space-between; align-items:center; }
-    section { border:1px solid #ddd; padding:12px; margin-top:16px; border-radius:6px; }
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 20px auto; padding: 0 16px; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    nav { margin-top:12px; }
+    nav a { color:#007; text-decoration:none; margin-right:8px; }
+    section { border:1px solid #ddd; padding:12px; margin-top:16px; border-radius:6px; background:#fff; }
     label { display:block; margin-top:8px; }
     input, textarea, select { width:100%; padding:8px; margin-top:4px; box-sizing:border-box; }
-    button { margin-top:8px; padding:8px 12px; }
+    button { margin-top:8px; padding:8px 12px; cursor:pointer; }
     .row { display:flex; gap:12px; flex-wrap:wrap; }
     .small { font-size:0.9em; color:#555; }
     .entry { border-bottom:1px solid #eee; padding:8px 0; }
@@ -18,85 +20,111 @@
     .admin { background:#fff7e6; }
     .counts { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
     .count-card { padding:8px 12px; border-radius:6px; border:1px solid #ddd; }
-    .site-title { margin: 0; line-height: 1.2; font-weight: 600; }
-    .profile-card img,
-      #summary-avatar { width: 120px; height: 120px; object-fit: cover; border-radius: 50%;
-      }
-
-    /* layout */
-    .layout { display:grid; grid-template-columns: 1fr 260px; gap:24px; }
-    .profile-card { border:1px solid #ddd; border-radius:8px; padding:12px; background:#fafafa; }
-    .profile-card img { width:100%; max-width:120px; height:auto; border-radius:50%; display:block; margin-bottom:8px; }
-    @media (max-width: 900px) {
-      .layout { grid-template-columns: 1fr; }
-    }
+    .layout { display:grid; grid-template-columns: 1fr 300px; gap:24px; align-items:start; }
+    .profile-card { border:1px solid #ddd; border-radius:8px; padding:12px; background:#fafafa; text-align:center; }
+    .profile-card img, #summary-avatar { width: 120px; height: 120px; object-fit: cover; border-radius:50%; display:block; margin:0 auto 8px auto; }
+    .muted { color:#777; font-size:0.9em; }
+    .danger { color:#a00; }
+    .flex { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .space-between { display:flex; justify-content:space-between; align-items:center; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .profile-card { margin-top: 12px; } }
+    .tc-box { border:1px dashed #ccc; padding:8px; margin-top:8px; border-radius:6px; background:#fffaf0; }
+    .small-btn { padding:6px 8px; font-size:0.9em; }
   </style>
 </head>
 <body>
   <header>
-      <h1>Be The Change</h1>
-      <p></p>
-      <h2>Be part of something bigger</h2>
-      <div id="auth-area" class="small">
-        <span id="user-email" font-size="em">Not signed in</span>
-        <button id="btn-logout" style="display:none">Log out</button>
-      </div>
+    <div>
+      <h1 style="margin:0; font-size:1.25rem">Be The Change</h1>
+      <p class="small" style="margin:2px 0 0 0">Be part of something bigger</p>
+    </div>
+    <div id="auth-area" class="small">
+      <span id="user-email">Not signed in</span>
+      <button id="btn-logout" style="display:none">Log out</button>
+    </div>
   </header>
 
-  <!-- Layout: main content + right-hand profile summary -->
+  <nav>
+    <a href="#dashboard" id="nav-dashboard">Dashboard</a>
+    <a href="#profile" id="nav-profile">Profile</a>
+    <a href="#my" id="nav-my">My submissions</a>
+    <a href="#resources" id="nav-resources">Resources</a>
+    <span id="nav-admin-wrap" style="display:none"> | <a href="#admin" id="nav-admin">Admin</a></span>
+  </nav>
+
   <div class="layout">
     <main class="main-content">
-      <!-- Authentication -->
-      <section id="auth-section">
-        <strong>Sign up / Log in (Email)</strong>
-        <div class="row">
-          <div style="flex:1 1 260px">
-            <label>Email<input id="email" type="email" /></label>
-            <label>Password<input id="password" type="password" /></label>
-            <button id="btn-signup">Sign up</button>
-            <button id="btn-login">Log in</button>
-          </div>
-          <div style="flex:1 1 260px">
-            <div class="small">After signing up, record the UID shown in console (or in user management in Firebase) and create an admins/{UID} document with enabled=true in Firestore to enable the admin panel for that account.</div>
-          </div>
+      <!-- DASHBOARD -->
+      <section id="dashboard-section">
+        <strong>Dashboard — recent approved entries</strong>
+        <div style="margin-top:8px" class="small">
+          Filter by cause:
+          <select id="dashboard-filter-cause" style="width:auto; display:inline-block; margin-left:8px">
+            <option value="">(all)</option>
+          </select>
+          <button id="dashboard-refresh" class="small-btn">Refresh</button>
         </div>
+        <div class="small" style="margin-top:8px">Total approved: <span id="total-count">0</span></div>
+        <div class="counts" id="tag-counts"></div>
+        <div id="approved-list" style="margin-top:12px"></div>
       </section>
 
-      <!-- Submit form -->
+      <!-- SUBMIT -->
       <section id="submit-section" style="display:none">
-        <strong>Submit something you've done that's had a positive impact!</strong>
-        <label>Short description<textarea id="entry-text" rows="3" placeholder="How have you had a positive impact recently?"></textarea></label>
-        <label>Tag
+        <strong>Submit something you did</strong>
+        <div id="submit-warning" class="small muted"></div>
+
+        <label>Short description
+          <textarea id="entry-text" rows="3" placeholder="What positive action did you take today?"></textarea>
+        </label>
+
+        <label>Type (choose one)
           <select id="entry-tag">
+            <option value="environment">Environment</option>
             <option value="charity">Charity</option>
             <option value="community">Community</option>
-            <option value="environment">Environment</option>
-            <option value="equality">Equality</option>
-            <option value="self-care">Self-care</option>
+            <option value="kindness">Kindness</option>
             <option value="other">Other</option>
           </select>
         </label>
+
+        <div style="margin-top:8px">
+          <div class="small">Causes (pick any that apply):</div>
+          <div id="causes-list" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+        </div>
+
+        <div style="margin-top:8px">
+          <div class="small">Action(s) (what you did):</div>
+          <div id="actions-list" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+        </div>
+
         <button id="btn-submit">Submit (goes to pending)</button>
         <div id="submit-status" class="small"></div>
       </section>
 
-      <!-- Dashboard (approved items) -->
-      <section id="dashboard-section">
-        <strong>Dashboard — approved entries</strong>
-        <div class="small">Total approved: <span id="total-count">0</span></div>
-        <div class="counts" id="tag-counts"></div>
-        <div id="approved-list"></div>
-      </section>
-
-      <!-- Profile section (full) -->
+      <!-- PROFILE (full) -->
       <section id="profile-section" style="display:none">
         <strong>My profile</strong>
-        <div>
-          <label>Display name<input id="profile-name" type="text"/></label>
-          <label>Bio<textarea id="profile-bio" rows="3"></textarea></label>
-          <label>Avatar URL<input id="profile-avatar" type="url" placeholder="https://..." /></label>
+        <div id="rejected-messages" class="small danger" style="margin-top:8px"></div>
+
+        <div style="margin-top:8px">
+          <label>Display name
+            <input id="profile-name" type="text" placeholder="How should your name appear?" />
+          </label>
+          <label>Bio
+            <textarea id="profile-bio" rows="3" placeholder="Why doing good matters to you (optional)"></textarea>
+          </label>
+          <label>Avatar URL
+            <input id="profile-avatar" type="url" placeholder="https://example.com/your-image.jpg" />
+          </label>
           <button id="btn-save-profile">Save profile</button>
           <div id="profile-save-status" class="small"></div>
+        </div>
+
+        <div class="tc-box" id="tc-box" style="display:none">
+          <strong>Terms &amp; guidance</strong>
+          <p class="small">Short guidance: submissions should be truthful, non-harmful, not promote illegal activities, and respect others. Repeated false or abusive submissions may lead to temporary blocking.</p>
+          <button id="btn-accept-tc" class="small-btn">I accept these Terms & Guidance</button>
         </div>
 
         <div style="margin-top:12px">
@@ -105,26 +133,40 @@
         </div>
       </section>
 
-      <!-- Admin panel -->
+      <!-- RESOURCES -->
+      <section id="resources-section" style="display:none">
+        <strong>Resources & Ideas</strong>
+        <div id="resources-list" class="small">Add curated links and ideas here.</div>
+      </section>
+
+      <!-- ADMIN -->
       <section id="admin-section" style="display:none" class="admin">
-        <strong>Admin panel — pending submissions</strong>
-        <div id="pending-list" class="small"></div>
+        <strong>Admin panel</strong>
+        <div style="margin-top:8px;">
+          <button id="admin-tab-pending" class="small-btn">Pending</button>
+          <button id="admin-tab-rejected" class="small-btn">Rejected</button>
+          <button id="admin-tab-appeals" class="small-btn">Appeals</button>
+        </div>
+        <div id="admin-pending" class="small" style="margin-top:8px"></div>
+        <div id="admin-rejected" class="small" style="margin-top:8px; display:none"></div>
+        <div id="admin-appeals" class="small" style="margin-top:8px; display:none"></div>
       </section>
     </main>
 
-    <!-- Profile summary (right) -->
+    <!-- PROFILE SUMMARY (right) -->
     <aside id="profile-summary" style="display:none">
       <div class="profile-card">
         <img id="summary-avatar" src="https://via.placeholder.com/120?text=User" alt="avatar" />
-        <h3 id="summary-name"></h3>
+        <h3 id="summary-name" style="margin:6px 0 4px 0"></h3>
         <p id="summary-bio" class="small" style="min-height:40px"></p>
         <div class="small"><strong id="summary-count">0</strong> actions logged</div>
-        <a href="#" id="open-profile" style="display:block;margin-top:8px">View full profile →</a>
+        <div style="margin-top:8px" class="small muted">Last action: <span id="summary-last">—</span></div>
+        <a href="#profile" id="open-profile" style="display:block;margin-top:8px">View full profile →</a>
       </div>
     </aside>
   </div>
 
-  <!-- Firebase SDKs (compat for simplicity) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -146,6 +188,16 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // Master lists
+    const CAUSES = [
+      'Climate change','Racial equality','Gender equality','Global conflict',
+      'Education','Mental health','Physical health','Disabilities','LGBTQ+ rights'
+    ];
+    const ACTIONS = [
+      'Signing petition','Donated','Volunteered','Attended event','Engaged with media',
+      'Act of kindness','Voted','Ethical purchase','Spread awareness','Self-care','Challenged behaviour'
+    ];
+
     // UI refs
     const emailEl = document.getElementById('email');
     const pwEl = document.getElementById('password');
@@ -160,6 +212,12 @@
     const entryText = document.getElementById('entry-text');
     const entryTag = document.getElementById('entry-tag');
     const submitStatus = document.getElementById('submit-status');
+    const submitWarning = document.getElementById('submit-warning');
+
+    const causesListEl = document.getElementById('causes-list');
+    const actionsListEl = document.getElementById('actions-list');
+    const dashboardFilterCause = document.getElementById('dashboard-filter-cause');
+    const dashboardRefresh = document.getElementById('dashboard-refresh');
 
     const approvedListEl = document.getElementById('approved-list');
     const totalCountEl = document.getElementById('total-count');
@@ -172,27 +230,71 @@
     const btnSaveProfile = document.getElementById('btn-save-profile');
     const profileSaveStatus = document.getElementById('profile-save-status');
     const mySubmissionsList = document.getElementById('my-submissions-list');
+    const rejectedMessagesEl = document.getElementById('rejected-messages');
+    const tcBox = document.getElementById('tc-box');
+    const btnAcceptTc = document.getElementById('btn-accept-tc');
+
+    const resourcesSection = document.getElementById('resources-section');
 
     const adminSection = document.getElementById('admin-section');
-    const pendingListEl = document.getElementById('pending-list');
+    const pendingListEl = document.getElementById('admin-pending');
+    const adminRejectedEl = document.getElementById('admin-rejected');
+    const adminAppealsEl = document.getElementById('admin-appeals');
+    const adminTabPending = document.getElementById('admin-tab-pending');
+    const adminTabRejected = document.getElementById('admin-tab-rejected');
+    const adminTabAppeals = document.getElementById('admin-tab-appeals');
+    const navAdminWrap = document.getElementById('nav-admin-wrap');
 
-    // Profile summary UI refs (RIGHT-HAND PANEL)
+    // profile summary refs
     const profileSummary = document.getElementById('profile-summary');
     const summaryName = document.getElementById('summary-name');
     const summaryBio = document.getElementById('summary-bio');
     const summaryAvatar = document.getElementById('summary-avatar');
     const summaryCount = document.getElementById('summary-count');
+    const summaryLast = document.getElementById('summary-last');
     const openProfileLink = document.getElementById('open-profile');
 
     let currentUser = null;
     let mySubmissionsUnsub = null;
+
+    // -- setup checkbox lists
+    function renderCheckboxList(container, items, namePrefix) {
+      container.innerHTML = '';
+      items.forEach((it, i) => {
+        const id = `${namePrefix}-${i}`;
+        const wrapper = document.createElement('label');
+        wrapper.style.marginRight = '8px';
+        wrapper.style.fontSize = '0.9em';
+        wrapper.innerHTML = `<input type="checkbox" id="${id}" value="${it}" /> ${it}`;
+        container.appendChild(wrapper);
+      });
+    }
+    renderCheckboxList(causesListEl, CAUSES, 'cause');
+    renderCheckboxList(actionsListEl, ACTIONS, 'action');
+
+    // populate dashboard filter
+    function populateDashboardFilter() {
+      dashboardFilterCause.innerHTML = '<option value="">(all)</option>';
+      CAUSES.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c;
+        o.textContent = c;
+        dashboardFilterCause.appendChild(o);
+      });
+    }
+    populateDashboardFilter();
+
+    // helper
+    function getCheckedValues(container) {
+      return Array.from(container.querySelectorAll('input[type=checkbox]:checked')).map(i => i.value);
+    }
 
     // Authentication handlers
     btnSignup.addEventListener('click', async () => {
       try {
         const userCred = await auth.createUserWithEmailAndPassword(emailEl.value.trim(), pwEl.value);
         console.log('Signed up UID:', userCred.user.uid);
-        alert('Signed up. Check console for UID; create admins/{UID} in Firestore for admin access.');
+        alert('Signed up. Check console for UID; create admins/{UID} in Firestore for admin access if needed.');
       } catch (err) {
         alert('Signup error: ' + err.message);
       }
@@ -214,11 +316,11 @@
       }
     });
 
-    // Auth state change: show/hide UI and attach per-user listeners
+    // Auth state change
     auth.onAuthStateChanged(async (user) => {
       currentUser = user;
 
-      // cleanup previous per-user listener
+      // cleanup prev listener
       if (mySubmissionsUnsub) {
         mySubmissionsUnsub();
         mySubmissionsUnsub = null;
@@ -228,71 +330,92 @@
         userEmailSpan.textContent = user.email;
         btnLogout.style.display = 'inline-block';
         submitSection.style.display = 'block';
-        profileSection.style.display = 'block';
+        profileSection.style.display = 'none'; // default: show full only when nav clicked
+        profileSummary.style.display = 'block';
         authSection.style.display = 'none';
-        profileSection.style.display = 'none';
 
-        // load profile fields and attach real-time listener for user's submissions
         await loadUserProfile();
         attachMySubmissionsListener();
         loadProfileSummary();
 
-        // CHECK ADMIN VIA FIRESTORE and do immediate pending fetch if admin
+        // admin check
         try {
           const adminDoc = await db.collection('admins').doc(user.uid).get();
           if (adminDoc.exists && adminDoc.data().enabled === true) {
             adminSection.style.display = 'block';
-            // immediate one-time fetch to ensure admin UI populates right away
+            navAdminWrap.style.display = 'inline';
+            // fetch immediate pending to populate
             try {
               const snap = await db.collection('submissions')
-                .where('status', '==', 'pending')
-                .orderBy('timestamp', 'asc')
+                .where('status','==','pending')
+                .orderBy('timestamp','asc')
                 .get();
               const items = [];
               snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
               renderPending(items);
-            } catch (err) {
-              console.error('Immediate pending fetch failed:', err);
-            }
+            } catch (e) { console.error('Immediate pending fetch failed', e); }
           } else {
             adminSection.style.display = 'none';
+            navAdminWrap.style.display = 'none';
           }
-        } catch (err) {
-          console.error('Admin check failed:', err);
+        } catch (e) {
+          console.error('Admin check failed', e);
           adminSection.style.display = 'none';
+          navAdminWrap.style.display = 'none';
         }
-
       } else {
         userEmailSpan.textContent = 'Not signed in';
         btnLogout.style.display = 'none';
         submitSection.style.display = 'none';
         profileSection.style.display = 'none';
+        profileSummary.style.display = 'none';
         adminSection.style.display = 'none';
         authSection.style.display = 'block';
-        if (profileSummary) profileSummary.style.display = 'none';
+        if (mySubmissionsUnsub) { mySubmissionsUnsub(); mySubmissionsUnsub = null; }
       }
     });
 
-    // Submit an entry -> writes a document with status 'pending'
+    // ---------- SUBMIT ----------
     btnSubmit.addEventListener('click', async () => {
       const text = entryText.value.trim();
-      const tag = entryTag.value;
+      const type = entryTag.value;
+      const causes = getCheckedValues(causesListEl);
+      const actions = getCheckedValues(actionsListEl);
+
       if (!currentUser) { alert('Please sign in'); return; }
       if (!text) { alert('Please enter a description'); return; }
       if (text.length > 1000) { alert('Text too long'); return; }
+
+      // check blocked / tcs
+      try {
+        const udoc = await db.collection('users').doc(currentUser.uid).get();
+        const udata = udoc.exists ? udoc.data() : {};
+        if (udata.blocked === true) {
+          alert('Your account is temporarily blocked from posting. Contact admin or appeal.');
+          return;
+        }
+        if (udata.tcsRequired === true && !udata.tcsAccepted) {
+          alert('You must read and accept the Terms & Guidance before posting. See your profile.');
+          return;
+        }
+      } catch (e) { console.error('user doc check failed', e); }
 
       btnSubmit.disabled = true;
       submitStatus.textContent = 'Submitting...';
       try {
         await db.collection('submissions').add({
           text,
-          tag,
+          tag: type,
+          causes,
+          actions,
           uid: currentUser.uid,
           email: currentUser.email,
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           status: 'pending'
         });
         entryText.value = '';
+        causesListEl.querySelectorAll('input[type=checkbox]').forEach(ch => ch.checked = false);
+        actionsListEl.querySelectorAll('input[type=checkbox]').forEach(ch => ch.checked = false);
         submitStatus.textContent = 'Submitted (pending approval)';
       } catch (err) {
         submitStatus.textContent = 'Error: ' + err.message;
@@ -301,31 +424,26 @@
       }
     });
 
-    // Real-time listener: approved entries
+    // ---------- LISTENERS: approved & pending ----------
     db.collection('submissions')
-      .where('status', '==', 'approved')
-      .orderBy('timestamp', 'desc')
+      .where('status','==','approved')
+      .orderBy('timestamp','desc')
       .onSnapshot(snapshot => {
         const items = [];
         snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
         renderApproved(items);
-      }, err => {
-        console.error('approved onSnapshot error', err);
-      });
+      }, err => console.error('approved onSnapshot error', err));
 
-    // Real-time listener: pending (for admin)
     db.collection('submissions')
-      .where('status', '==', 'pending')
-      .orderBy('timestamp', 'asc')
+      .where('status','==','pending')
+      .orderBy('timestamp','asc')
       .onSnapshot(snapshot => {
         const items = [];
         snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
         renderPending(items);
-      }, err => {
-        console.error('pending onSnapshot error', err);
-      });
+      }, err => console.error('pending onSnapshot error', err));
 
-    // Render approved list + counts
+    // ---------- RENDER: approved ----------
     function renderApproved(items) {
       totalCountEl.textContent = items.length;
       const counts = {};
@@ -338,39 +456,38 @@
         tagCountsEl.appendChild(el);
       }
       approvedListEl.innerHTML = '';
-      if (items.length === 0) {
-        approvedListEl.textContent = 'No approved entries yet.';
-        return;
-      }
+      if (!items.length) { approvedListEl.textContent = 'No approved entries yet.'; return; }
       items.forEach(it => {
         const d = document.createElement('div');
         d.className = 'entry';
-        const time = it.timestamp ? new Date(it.timestamp.seconds * 1000).toLocaleString() : '—';
-        d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div><div class="small">by ${escapeHtml(it.email)} • ${time}</div>`;
+        const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+        const causesText = (it.causes || []).map(c=>escapeHtml(c)).join(', ');
+        const actionsText = (it.actions || []).map(a=>escapeHtml(a)).join(', ');
+        d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+          <div class="small">Causes: ${causesText || '—'} • Actions: ${actionsText || '—'}</div>
+          <div class="small">by ${escapeHtml(it.email)} • ${time}</div>`;
         approvedListEl.appendChild(d);
       });
     }
 
-    // Render pending for admin
+    // ---------- RENDER: pending (admin) ----------
     function renderPending(items) {
-      // Only show pending list if user is signed in and adminSection is visible
       if (!currentUser || getComputedStyle(adminSection).display === 'none') {
         pendingListEl.innerHTML = '<div class="small">No admin access.</div>';
         return;
       }
-
-      if (items.length === 0) {
-        pendingListEl.innerHTML = '<div class="small">No pending submissions.</div>';
-        return;
-      }
-
+      if (!items.length) { pendingListEl.innerHTML = '<div class="small">No pending submissions.</div>'; return; }
       pendingListEl.innerHTML = '';
       items.forEach(it => {
         const d = document.createElement('div');
         d.className = 'entry';
-        const time = it.timestamp ? new Date(it.timestamp.seconds * 1000).toLocaleString() : '—';
+        const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+        const causesText = (it.causes || []).join(', ');
+        const actionsText = (it.actions || []).join(', ');
         d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
-                       <div class="small">from ${escapeHtml(it.email)} • ${time}</div>`;
+          <div class="small">Causes: ${escapeHtml(causesText)} • Actions: ${escapeHtml(actionsText)}</div>
+          <div class="small">from ${escapeHtml(it.email)} • ${time}</div>
+          <div class="small">User ID: ${escapeHtml(it.uid)}</div>`;
         const btnApprove = document.createElement('button');
         btnApprove.textContent = 'Approve';
         btnApprove.addEventListener('click', () => changeStatus(it.id, 'approved'));
@@ -383,62 +500,69 @@
       });
     }
 
+    // ---------- changeStatus for admin (updates submission & user counters) ----------
     async function changeStatus(docId, newStatus) {
       try {
-        await db.collection('submissions').doc(docId).update({ status: newStatus });
+        const docRef = db.collection('submissions').doc(docId);
+        const docSnap = await docRef.get();
+        if (!docSnap.exists) { alert('Document missing'); return; }
+        const data = docSnap.data();
+        const uid = data.uid;
+
+        await docRef.update({ status: newStatus });
+
+        if (newStatus === 'rejected') {
+          const userRef = db.collection('users').doc(uid);
+          await db.runTransaction(async tx => {
+            const u = await tx.get(userRef);
+            const udata = u.exists ? u.data() : {};
+            const rejectedCount = (udata.rejectedCount || 0) + 1;
+            const history = udata.rejectedHistory || [];
+            history.push({ submissionId: docId, time: firebase.firestore.FieldValue.serverTimestamp() });
+            const updates = { rejectedCount, rejectedHistory: history };
+            if (rejectedCount >= 3 && !udata.tcsRequired) updates.tcsRequired = true;
+            if (rejectedCount >= 5) updates.blocked = true;
+            tx.set(userRef, updates, { merge: true });
+          });
+        }
       } catch (err) {
         alert('Error changing status: ' + err.message);
+        console.error(err);
       }
     }
 
-    // ---------------- Profile: load/save and real-time personal submissions ----------------
-
+    // ---------- PROFILE: load/save ----------
     async function loadUserProfile() {
       if (!currentUser) return;
       profileSaveStatus.textContent = 'Loading...';
       try {
-        const userDoc = await db.collection('users').doc(currentUser.uid).get();
-        if (userDoc.exists) {
-          const data = userDoc.data();
-          profileNameEl.value = data.displayName || '';
-          profileBioEl.value = data.bio || '';
-          profileAvatarEl.value = data.avatarUrl || '';
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const userDoc = await userRef.get();
+        const data = userDoc.exists ? userDoc.data() : {};
+        profileNameEl.value = data.displayName || currentUser.email.split('@')[0] || '';
+        profileBioEl.value = data.bio || '';
+        profileAvatarEl.value = data.avatarUrl || '';
+        // show messages / tcs
+        const rejectedCount = data.rejectedCount || 0;
+        const blocked = !!data.blocked;
+        const tcsRequired = !!data.tcsRequired;
+        const tcsAccepted = !!data.tcsAccepted;
+        if (blocked) {
+          rejectedMessagesEl.innerHTML = 'Your account is blocked from posting due to repeated rejections. You may appeal.';
+        } else if (tcsRequired && !tcsAccepted) {
+          rejectedMessagesEl.innerHTML = `You have ${rejectedCount} rejected submissions. Please review and accept the Terms & Guidance below to continue posting.`;
+          tcBox.style.display = 'block';
+        } else if (rejectedCount > 0) {
+          rejectedMessagesEl.innerHTML = `You have ${rejectedCount} rejected submissions.`;
+          tcBox.style.display = 'none';
         } else {
-          profileNameEl.value = currentUser.email.split('@')[0] || '';
-          profileBioEl.value = '';
-          profileAvatarEl.value = '';
+          rejectedMessagesEl.innerHTML = '';
+          tcBox.style.display = 'none';
         }
         profileSaveStatus.textContent = '';
       } catch (err) {
         console.error('loadUserProfile error', err);
         profileSaveStatus.textContent = 'Error loading profile';
-      }
-    }
-
-    async function loadProfileSummary() {
-      if (!currentUser || !profileSummary) return;
-
-      profileSummary.style.display = 'block';
-
-      try {
-        const userDoc = await db.collection('users').doc(currentUser.uid).get();
-        const data = userDoc.exists ? userDoc.data() : {};
-
-        summaryName.textContent =
-          data.displayName || currentUser.email.split('@')[0];
-
-        summaryBio.textContent = data.bio || '';
-
-        summaryAvatar.src = data.avatarUrl || 'https://via.placeholder.com/120?text=User';
-        summaryAvatar.onerror = () => summaryAvatar.src = 'https://via.placeholder.com/120?text=User';
-
-        const snap = await db.collection('submissions')
-          .where('uid', '==', currentUser.uid)
-          .get();
-
-        summaryCount.textContent = snap.size;
-      } catch (err) {
-        console.error('loadProfileSummary error', err);
       }
     }
 
@@ -454,7 +578,6 @@
       try {
         await docRef.set(payload, { merge: true });
         profileSaveStatus.textContent = 'Saved';
-        // refresh sidebar
         loadProfileSummary();
       } catch (err) {
         console.error('save profile error', err);
@@ -462,18 +585,34 @@
       }
     });
 
-    // Attach a real-time listener for the current user's submissions so edits/deletes appear live
+    // accept T&C
+    if (btnAcceptTc) {
+      btnAcceptTc.addEventListener('click', async () => {
+        if (!currentUser) { alert('Sign in first'); return; }
+        try {
+          await db.collection('users').doc(currentUser.uid).set({ tcsAccepted: true, tcsRequired: false }, { merge: true });
+          tcBox.style.display = 'none';
+          rejectedMessagesEl.innerHTML = 'Terms accepted — you may continue posting.';
+        } catch (e) {
+          alert('Failed to accept: ' + e.message);
+        }
+      });
+    }
+
+    // ---------- MY SUBMISSIONS (real-time) ----------
     function attachMySubmissionsListener() {
       if (!currentUser) return;
       mySubmissionsUnsub = db.collection('submissions')
-        .where('uid', '==', currentUser.uid)
-        .orderBy('timestamp', 'desc')
+        .where('uid','==', currentUser.uid)
+        .orderBy('timestamp','desc')
         .onSnapshot(snapshot => {
           const items = [];
           snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
           renderMySubmissions(items);
-          // update summary count live
           if (profileSummary) summaryCount.textContent = items.length;
+          // update summary last action
+          const last = items[0];
+          summaryLast.textContent = last ? new Date(last.timestamp?.seconds*1000||Date.now()).toLocaleString() : '—';
         }, err => {
           console.error('my submissions onSnapshot error', err);
           mySubmissionsList.textContent = 'Error loading your submissions: ' + (err && err.message ? err.message : err);
@@ -490,8 +629,11 @@
         const wrapper = document.createElement('div');
         wrapper.className = 'entry';
         const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+        const causesText = (it.causes || []).join(', ');
+        const actionsText = (it.actions || []).join(', ');
         wrapper.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
-                             <div class="small">status: ${escapeHtml(it.status)} • ${time}</div>`;
+          <div class="small">Causes: ${escapeHtml(causesText || '—')} • Actions: ${escapeHtml(actionsText || '—')}</div>
+          <div class="small">status: ${escapeHtml(it.status)} • ${time}</div>`;
         if (it.status === 'pending') {
           const btnEdit = document.createElement('button');
           btnEdit.textContent = 'Edit';
@@ -501,6 +643,12 @@
           btnDelete.addEventListener('click', () => deleteSubmission(it.id));
           wrapper.appendChild(btnEdit);
           wrapper.appendChild(btnDelete);
+        }
+        if (it.status === 'rejected') {
+          const appealBtn = document.createElement('button');
+          appealBtn.textContent = 'Appeal';
+          appealBtn.addEventListener('click', () => openAppealDialog(it.id));
+          wrapper.appendChild(appealBtn);
         }
         mySubmissionsList.appendChild(wrapper);
       });
@@ -513,36 +661,230 @@
       if (!trimmed) { alert('Text cannot be empty'); return; }
       try {
         await db.collection('submissions').doc(docId).update({ text: trimmed });
-        // real-time listener will refresh the list
-      } catch (err) {
-        alert('Error updating: ' + err.message);
-      }
+      } catch (err) { alert('Error updating: ' + err.message); }
     }
 
     async function deleteSubmission(docId) {
       if (!confirm('Delete this submission?')) return;
       try {
         await db.collection('submissions').doc(docId).delete();
-        // real-time listener will refresh the list
+      } catch (err) { alert('Delete failed: ' + err.message); }
+    }
+
+    // appeal dialog
+    async function openAppealDialog(submissionId) {
+      const reason = prompt('Write a short appeal message (why should this be reviewed):');
+      if (!reason) return;
+      try {
+        await db.collection('submissions').doc(submissionId).collection('appeals').add({
+          uid: currentUser.uid,
+          message: reason,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          status: 'open'
+        });
+        alert('Appeal submitted. Admin will review.');
       } catch (err) {
-        alert('Delete failed: ' + err.message);
+        alert('Failed to submit appeal: ' + err.message);
       }
     }
 
-    // Basic HTML escape to show user input safely
-    function escapeHtml(s) {
-      if (!s) return '';
-      return s.replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    // ---------- ADMIN: rejected & appeals ----------
+    async function loadAdminRejected() {
+      adminRejectedEl.textContent = 'Loading rejected...';
+      try {
+        const snap = await db.collection('submissions').where('status','==','rejected').orderBy('timestamp','desc').get();
+        adminRejectedEl.innerHTML = '';
+        snap.forEach(d => {
+          const it = d.data();
+          const container = document.createElement('div');
+          container.className = 'entry';
+          const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+          container.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+            <div class="small">from ${escapeHtml(it.email)} • ${time}</div>
+            <div class="small">User ID: ${escapeHtml(it.uid)}</div>`;
+          adminRejectedEl.appendChild(container);
+        });
+      } catch (e) {
+        adminRejectedEl.textContent = 'Error loading rejected: ' + e.message;
+      }
     }
 
-    // open full profile from summary
+    async function loadAdminAppeals() {
+      adminAppealsEl.textContent = 'Loading appeals...';
+      try {
+        adminAppealsEl.innerHTML = '';
+        // query recent submissions and their appeals (for MVP)
+        const subs = await db.collection('submissions').orderBy('timestamp','desc').limit(300).get();
+        for (const s of subs.docs) {
+          const appealsSnap = await s.ref.collection('appeals').where('status','==','open').get();
+          appealsSnap.forEach(a => {
+            const ad = a.data();
+            const el = document.createElement('div');
+            el.className = 'entry';
+            el.innerHTML = `<div><strong>Appeal</strong> for <em>${s.id}</em> (submission by ${escapeHtml(s.data().email)})</div>
+              <div class="small">${escapeHtml(ad.message)}</div>
+              <div class="small">from user: ${escapeHtml(ad.uid)} • ${new Date(ad.timestamp?.seconds*1000||Date.now()).toLocaleString()}</div>
+              <div style="margin-top:6px" class="flex">
+                <button class="small-btn" data-sub="${s.id}" data-appeal="${a.id}" data-action="approve_unblock">Approve & Unblock</button>
+                <button class="small-btn" data-sub="${s.id}" data-appeal="${a.id}" data-action="approve_unblock_warn">Approve & Unblock (warn)</button>
+                <button class="small-btn" data-sub="${s.id}" data-appeal="${a.id}" data-action="reject_unblock">Reject & Unblock</button>
+                <button class="small-btn" data-sub="${s.id}" data-appeal="${a.id}" data-action="reject_block">Reject & Block</button>
+                <button class="small-btn" data-sub="${s.id}" data-appeal="${a.id}" data-action="mark_resolved_nochange">Mark resolved (no change)</button>
+              </div>`;
+            adminAppealsEl.appendChild(el);
+
+            // wire buttons
+            el.querySelectorAll('button').forEach(btn => {
+              btn.addEventListener('click', async (e) => {
+                const action = btn.getAttribute('data-action');
+                const subId = btn.getAttribute('data-sub');
+                const appealId = btn.getAttribute('data-appeal');
+                await resolveAppeal(subId, appealId, action);
+                // remove element on success
+                el.remove();
+              });
+            });
+          });
+        }
+      } catch (e) {
+        adminAppealsEl.textContent = 'Error loading appeals: ' + e.message;
+      }
+    }
+
+    // resolve appeal action: updates appeal doc and user doc accordingly
+    async function resolveAppeal(subId, appealId, action) {
+      try {
+        const subRef = db.collection('submissions').doc(subId);
+        const subSnap = await subRef.get();
+        if (!subSnap.exists) throw new Error('Submission missing');
+        const uid = subSnap.data().uid;
+        const userRef = db.collection('users').doc(uid);
+        await db.runTransaction(async tx => {
+          // mark appeal resolved
+          const appealRef = subRef.collection('appeals').doc(appealId);
+          tx.update(appealRef, { status: 'resolved', resolvedBy: currentUser.uid, resolvedAt: firebase.firestore.FieldValue.serverTimestamp(), resolution: action });
+          // apply action to user flags
+          const u = await tx.get(userRef);
+          const udata = u.exists ? u.data() : {};
+          let updates = {};
+          if (action === 'approve_unblock') {
+            updates.blocked = false;
+            updates.lastAppealOutcome = 'approved_unblock';
+            // optionally reduce rejectedCount by 1 (keep audit); here we don't decrement automatically
+          } else if (action === 'approve_unblock_warn') {
+            updates.blocked = false;
+            updates.warning = (udata.warning || 0) + 1;
+            updates.lastAppealOutcome = 'approved_unblock_warn';
+          } else if (action === 'reject_unblock') {
+            updates.blocked = false;
+            updates.lastAppealOutcome = 'rejected_unblock';
+          } else if (action === 'reject_block') {
+            updates.blocked = true;
+            updates.lastAppealOutcome = 'rejected_block';
+          } else if (action === 'mark_resolved_nochange') {
+            updates.lastAppealOutcome = 'resolved_nochange';
+          }
+          tx.set(userRef, updates, { merge: true });
+        });
+        alert('Appeal resolved: ' + action);
+      } catch (err) {
+        alert('Failed to resolve appeal: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    // admin tab wiring
+    adminTabPending.addEventListener('click', () => {
+      adminPendingEl.style.display='block'; adminRejectedEl.style.display='none'; adminAppealsEl.style.display='none';
+    });
+    adminTabRejected.addEventListener('click', async () => {
+      adminPendingEl.style.display='none'; adminRejectedEl.style.display='block'; adminAppealsEl.style.display='none';
+      await loadAdminRejected();
+    });
+    adminTabAppeals.addEventListener('click', async () => {
+      adminPendingEl.style.display='none'; adminRejectedEl.style.display='none'; adminAppealsEl.style.display='block';
+      await loadAdminAppeals();
+    });
+
+    // ---------- DASHBOARD feed & filter ----------
+    async function loadDashboardFeed(filterCause = '') {
+      approvedListEl.textContent = 'Loading...';
+      try {
+        const snap = await db.collection('submissions').where('status','==','approved').orderBy('timestamp','desc').limit(500).get();
+        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const filtered = filterCause ? items.filter(i => (i.causes||[]).includes(filterCause)) : items;
+        renderApproved(filtered);
+      } catch (e) {
+        approvedListEl.textContent = 'Error loading feed: ' + e.message;
+      }
+    }
+    dashboardRefresh.addEventListener('click', () => loadDashboardFeed(dashboardFilterCause.value));
+    dashboardFilterCause.addEventListener('change', () => loadDashboardFeed(dashboardFilterCause.value));
+    // initial load
+    loadDashboardFeed();
+
+    // ---------- PROFILE SUMMARY ----------
+    async function loadProfileSummary() {
+      if (!currentUser || !profileSummary) return;
+      profileSummary.style.display = 'block';
+      try {
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const data = userDoc.exists ? userDoc.data() : {};
+        summaryName.textContent = data.displayName || currentUser.email.split('@')[0];
+        summaryBio.textContent = data.bio || '';
+        summaryAvatar.src = data.avatarUrl || 'https://via.placeholder.com/120?text=User';
+        summaryAvatar.onerror = () => summaryAvatar.src = 'https://via.placeholder.com/120?text=User';
+        // quick count
+        const snap = await db.collection('submissions').where('uid','==', currentUser.uid).get();
+        summaryCount.textContent = snap.size;
+      } catch (err) { console.error('loadProfileSummary error', err); }
+    }
+
     if (openProfileLink) {
       openProfileLink.addEventListener('click', (e) => {
         e.preventDefault();
-        profileSection.style.display = 'block';
-        profileSection.scrollIntoView({ behavior: 'smooth' });
+        location.hash = '#profile';
       });
     }
+
+    // ---------- small utilities ----------
+    function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+    // ---------- routing ----------
+    function showPage(hash) {
+      const pages = {
+        '#dashboard': ['dashboard-section'],
+        '#profile': ['profile-section'],
+        '#my': ['profile-section'],
+        '#resources': ['resources-section'],
+        '#admin': ['admin-section']
+      };
+      const allIds = ['dashboard-section','profile-section','submit-section','admin-section','resources-section'];
+      allIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      // keep submit visible if logged in
+      if (currentUser) submitSection.style.display = 'block';
+      const show = pages[hash] || ['dashboard-section'];
+      show.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'block'; });
+      // if showing profile, ensure summary stays visible
+      if (hash === '#profile') { profileSection.style.display = 'block'; }
+      if (hash === '#my') { profileSection.style.display = 'block'; }
+    }
+    window.addEventListener('hashchange', () => showPage(location.hash));
+    document.getElementById('nav-dashboard').addEventListener('click', ()=> location.hash = '#dashboard');
+    document.getElementById('nav-profile').addEventListener('click', ()=> location.hash = '#profile');
+    document.getElementById('nav-my').addEventListener('click', ()=> location.hash = '#my');
+    document.getElementById('nav-resources').addEventListener('click', ()=> location.hash = '#resources');
+    document.getElementById('nav-admin')?.addEventListener('click', ()=> location.hash = '#admin');
+    // initial page
+    showPage(location.hash || '#dashboard');
+
+    // ---------- final small initialisers ----------
+    // ensure avatar is circular and fallback
+    if (summaryAvatar) summaryAvatar.onerror = () => summaryAvatar.src = 'https://via.placeholder.com/120?text=User';
+
+    // ensure admin nav toggles visibility when admin status changes (already set in auth flow)
+
+    // End of script
   </script>
 </body>
 </html>
