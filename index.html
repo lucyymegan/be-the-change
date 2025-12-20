@@ -25,16 +25,7 @@
     .entry{border-bottom:1px solid #f0f0f0;padding:10px 0}
     .tag{display:inline-block;background:#eef;padding:2px 8px;border-radius:10px;margin-left:8px;font-size:0.85em}
     .profile-card{border:1px solid #ddd;border-radius:8px;padding:12px;background:#fafafa;text-align:center}
-    /* Force perfect circular profile image */
-    .profile-card img, #sidebar-avatar {
-      width:120px;
-      height:120px;
-      object-fit:cover;
-      border-radius:50%;
-      display:block;
-      margin:0 auto 8px;
-      background:#ddd;
-    }
+    .profile-card img, #summary-avatar{width:120px;height:120px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 8px}
     .counts{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
     .count-card{padding:6px 10px;border-radius:6px;border:1px solid #ddd}
     .dropdown-multi{position:relative;display:inline-block}
@@ -75,8 +66,8 @@
         <strong>Sign up / Log in (Email)</strong>
         <div class="row" style="margin-top:8px">
           <div style="flex:1 1 260px">
-            <label>Email<input id="email" type="email" placeholder="you@uni.ac.uk" /></label>
-            <label>Password<input id="password" type="password" placeholder="Choose a secure password" /></label>
+            <label>Email<input id="email" type="email" /></label>
+            <label>Password<input id="password" type="password" /></label>
             <div style="display:flex;gap:8px;margin-top:8px">
               <button id="btn-signup" class="small-btn">Sign up</button>
               <button id="btn-login" class="small-btn">Log in</button>
@@ -96,7 +87,7 @@
           <div class="flex">
             <div>
               Type:
-              <select id="filter-type" style="width:220px;display:inline-block;margin-left:6px"><!-- populated dynamically --></select>
+              <select id="filter-type" style="width:220px;display:inline-block;margin-left:6px"></select>
             </div>
             <div>
               Causes:
@@ -138,7 +129,7 @@
         <div class="small muted" id="submit-warning">Please be truthful. Repeated rejected submissions may lead to temporary blocking.</div>
 
         <label>Short description
-          <textarea id="entry-text" rows="3" placeholder="Describe the positive action you took (one or two sentences)"></textarea>
+          <textarea id="entry-text" rows="3" placeholder="What positive action did you take today?"></textarea>
         </label>
 
         <label>Type (choose one)
@@ -204,15 +195,14 @@
         <strong>Resources & Ideas</strong>
 
         <div style="margin-top:8px">
-          <label>Title<input id="resource-title" type="text" placeholder="Resource title" /></label>
+          <label>Title<input id="resource-title" type="text" /></label>
           <label>URL<input id="resource-url" type="url" placeholder="https://..." /></label>
-          <label>Description<textarea id="resource-desc" rows="3" placeholder="Why this resource is useful"></textarea></label>
+          <label>Description<textarea id="resource-desc" rows="3"></textarea></label>
           <label>Resource type<select id="resource-type"></select></label>
-
           <button id="show-resource-form" class="small-btn">Suggest a resource</button>
 
           <div id="resource-form" style="display:none;margin-top:10px">
-            <!-- form fields are already in the section -->
+            <!-- extra fields (reused above) -->
           </div>
 
           <div style="margin-top:8px">
@@ -281,7 +271,8 @@
     <!-- RIGHT SIDEBAR -->
     <aside>
       <div class="profile-card">
-        <img id="sidebar-avatar" src="https://via.placeholder.com/120?text=User" alt="avatar" />
+        <!-- inline SVG fallback to avoid external DNS issues -->
+        <img id="summary-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect width='100%' height='100%' fill='%23ddd'/><text x='50%' y='50%' font-size='14' text-anchor='middle' alignment-baseline='central' fill='%23666'>User</text></svg>" alt="avatar" />
         <h3 id="summary-name"></h3>
         <p id="summary-bio" class="small" style="min-height:40px"></p>
         <div class="small"><strong id="summary-count">0</strong> actions logged</div>
@@ -303,21 +294,15 @@
     </aside>
   </div>
 
-  <!-- Firebase SDKs (compat) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // ----------------- Global error handlers (helps debug line numbers) -----------------
-    window.addEventListener('error', (ev) => {
-      console.error('Window error:', ev.message, ev.filename + ':' + ev.lineno + ':' + ev.colno);
-    });
-    window.addEventListener('unhandledrejection', (ev) => {
-      console.error('Unhandled rejection:', ev.reason);
-    });
-
-    // ----------------- Firebase config (replace with your values) -----------------
+    /* ======================
+      CONFIG - replace with your project's config if different
+      ====================== */
     const firebaseConfig = {
       apiKey: "AIzaSyAZi3WI84OKkzUADIRH-oYwgy_xSHZU-OE",
       authDomain: "be-the-change-bd30d.firebaseapp.com",
@@ -331,7 +316,9 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // ----------------- UI refs -----------------
+    /* ======================
+      UI refs
+      ====================== */
     const authSection = document.getElementById('auth-section');
     const emailEl = document.getElementById('email');
     const pwEl = document.getElementById('password');
@@ -412,7 +399,7 @@
 
     const summaryName = document.getElementById('summary-name');
     const summaryBio = document.getElementById('summary-bio');
-    const sidebarAvatar = document.getElementById('sidebar-avatar');
+    const summaryAvatar = document.getElementById('summary-avatar');
     const summaryCount = document.getElementById('summary-count');
     const summaryLast = document.getElementById('summary-last');
     const openProfileLink = document.getElementById('open-profile');
@@ -429,8 +416,8 @@
     const navAdmin = document.getElementById('nav-admin');
 
     /* ======================
-      State & defaults
-    ====================== */
+      State
+      ====================== */
     let currentUser = null;
     let mySubmissionsUnsub = null;
     let approvedSnapshotUnsub = null;
@@ -438,71 +425,65 @@
     let settings = { enableVotes: true, enableBookmarks: true };
     let lastSubmitAt = 0; // client rate-limit
 
+    /* ======================
+      Utilities
+      ====================== */
     function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-    function sortAlpha(a){ return a.sort((x,y)=>x.localeCompare(y,'en',{sensitivity:'base'})); }
+    function sortAlpha(a){return a.sort((x,y)=>x.localeCompare(y,'en',{sensitivity:'base'}));}
 
     /* ======================
       Master lists: load & render
-      stored under config/master (fallback to defaults if read fails)
-    ====================== */
+      - stored in doc config/master
+      ====================== */
     async function loadMasterLists(){
-      // safe defaults to ensure UI populates even if Firestore read fails
-      masterLists = Object.assign({
-        causes: ['Climate change','Education','Gender equality','LGBTQ+ rights','Mental health','Physical health','Racial equality','Disabilities','Global conflict'],
-        actions: ['Act of kindness','Attended event','Donated','Engaged with media','Ethical purchase','Signing petition','Spread awareness','Volunteered','Voted','Self-care','Challenged behaviour'],
-        types: ['environment','charity','community','kindness','other'],
-        resourceTypes: ['petition','fundraiser','volunteering','job','website','media','community','article','other']
-      }, masterLists);
-
-      try {
+      try{
         const doc = await db.collection('config').doc('master').get();
-        if (doc.exists) {
+        if(doc.exists){
           masterLists = Object.assign(masterLists, doc.data());
           ['causes','actions','types','resourceTypes'].forEach(k=>{ masterLists[k]=Array.isArray(masterLists[k])?masterLists[k]:[]; masterLists[k]=sortAlpha(masterLists[k]); });
         } else {
-          // write defaults back to Firestore for future editing (best-effort)
-          try { await db.collection('config').doc('master').set(masterLists, {merge:true}); } catch(e){ /* ignore */ }
+          masterLists.causes = ['Climate change','Education','Gender equality','LGBTQ+ rights','Mental health','Physical health','Racial equality','Disabilities','Global conflict'];
+          masterLists.actions = ['Act of kindness','Attended event','Donated','Engaged with media','Ethical purchase','Signing petition','Spread awareness','Volunteered','Voted','Self-care','Challenged behaviour'];
+          masterLists.types = ['environment','charity','community','kindness','other'];
+          masterLists.resourceTypes = ['petition','fundraiser','volunteering','job','website','media','community','article','other'];
+          await db.collection('config').doc('master').set(masterLists, {merge:true});
         }
-      } catch(e){
-        console.error('loadMasterLists firestore read failed:', e);
-        // keep defaults (already assigned)
+      }catch(e){
+        console.error('loadMasterLists error', e);
+        const panel = document.getElementById('approved-list') || document.body;
+        const msg = document.createElement('div'); msg.className='danger small'; msg.textContent = 'Could not load master lists — check Firestore rules or ensure config/master exists.';
+        panel.prepend(msg);
       }
       renderMasterListsUI();
     }
 
+    /* render master lists into UI panels/dropdowns */
     function renderMasterListsUI(){
       entryCausesPanel.innerHTML=''; resourceCausesPanel.innerHTML=''; filterCausesPanel.innerHTML=''; entryActionsPanel.innerHTML=''; resourceActionsPanel.innerHTML=''; filterActionsPanel.innerHTML='';
       entryTypeSelect.innerHTML=''; filterType.innerHTML=''; resourceTypeSelect.innerHTML='';
-
       const types = masterLists.types || [];
       types.forEach(t=>{
         const o=document.createElement('option'); o.value=t; o.textContent=t; entryTypeSelect.appendChild(o);
         const fo=document.createElement('option'); fo.value=t; fo.textContent=t; filterType.appendChild(fo);
         const ro=document.createElement('option'); ro.value=t; ro.textContent=t; resourceTypeSelect.appendChild(ro);
       });
-
-      (masterLists.causes||[]).forEach((c)=>{
-        const ch = document.createElement('label'); ch.style.marginRight='8px'; ch.className='chip';
-        ch.innerHTML = `<input type="checkbox" value="${escapeHtml(c)}" /> ${escapeHtml(c)}`;
-        entryCausesPanel.appendChild(ch);
+      (masterLists.causes||[]).forEach((c,i)=>{
+        const ch = document.createElement('label'); ch.style.marginRight='8px'; ch.className='chip'; ch.innerHTML = `<input type="checkbox" value="${escapeHtml(c)}" /> ${escapeHtml(c)}`; entryCausesPanel.appendChild(ch);
         const rch = ch.cloneNode(true); rch.querySelector('input').checked=false; resourceCausesPanel.appendChild(rch);
         const fp = document.createElement('div'); fp.style.marginBottom='6px'; fp.innerHTML = `<label><input type="checkbox" value="${escapeHtml(c)}"/> ${escapeHtml(c)}</label>`; filterCausesPanel.appendChild(fp);
       });
-
-      (masterLists.actions||[]).forEach((a)=>{
-        const ch = document.createElement('label'); ch.style.marginRight='8px'; ch.className='chip';
-        ch.innerHTML = `<input type="checkbox" value="${escapeHtml(a)}" /> ${escapeHtml(a)}`;
-        entryActionsPanel.appendChild(ch);
+      (masterLists.actions||[]).forEach((a,i)=>{
+        const ch = document.createElement('label'); ch.style.marginRight='8px'; ch.className='chip'; ch.innerHTML = `<input type="checkbox" value="${escapeHtml(a)}" /> ${escapeHtml(a)}`; entryActionsPanel.appendChild(ch);
         const rch = ch.cloneNode(true); rch.querySelector('input').checked=false; resourceActionsPanel.appendChild(rch);
         const fp = document.createElement('div'); fp.style.marginBottom='6px'; fp.innerHTML = `<label><input type="checkbox" value="${escapeHtml(a)}"/> ${escapeHtml(a)}</label>`; filterActionsPanel.appendChild(fp);
       });
-
       if(adminCausesTA) adminCausesTA.value = (masterLists.causes||[]).join(', ');
       if(adminActionsTA) adminActionsTA.value = (masterLists.actions||[]).join(', ');
       if(adminTypesTA) adminTypesTA.value = (masterLists.types||[]).join(', ');
       if(adminResourceTypesTA) adminResourceTypesTA.value = (masterLists.resourceTypes||[]).join(', ');
     }
 
+    /* save master lists (admin) */
     btnSaveMaster?.addEventListener('click', async ()=>{
       if(!currentUser) return alert('Sign in as admin');
       try{
@@ -519,20 +500,33 @@
       }catch(e){ masterSaveStatus.textContent='Error'; console.error(e); }
     });
 
+    /* admin settings toggles */
     adminToggleVotes?.addEventListener('change', async ()=>{
-      try{ settings.enableVotes = adminToggleVotes.checked; await db.collection('config').doc('settings').set(settings, {merge:true}); }catch(e){ console.error(e); }
+      try{
+        settings.enableVotes = adminToggleVotes.checked;
+        await db.collection('config').doc('settings').set(settings, {merge:true});
+      }catch(e){ console.error(e); }
     });
     adminToggleBookmarks?.addEventListener('change', async ()=>{
-      try{ settings.enableBookmarks = adminToggleBookmarks.checked; await db.collection('config').doc('settings').set(settings, {merge:true}); }catch(e){ console.error(e); }
+      try{
+        settings.enableBookmarks = adminToggleBookmarks.checked;
+        await db.collection('config').doc('settings').set(settings, {merge:true});
+      }catch(e){ console.error(e); }
     });
 
+    /* load settings */
     async function loadSettings(){
-      try{ const sdoc = await db.collection('config').doc('settings').get(); if(sdoc.exists) settings = Object.assign(settings, sdoc.data()); if(adminToggleVotes) adminToggleVotes.checked = !!settings.enableVotes; if(adminToggleBookmarks) adminToggleBookmarks.checked = !!settings.enableBookmarks; }catch(e){ console.error('loadSettings',e); }
+      try{
+        const sdoc = await db.collection('config').doc('settings').get();
+        if(sdoc.exists) settings = Object.assign(settings, sdoc.data());
+        if(adminToggleVotes) adminToggleVotes.checked = !!settings.enableVotes;
+        if(adminToggleBookmarks) adminToggleBookmarks.checked = !!settings.enableBookmarks;
+      }catch(e){ console.error('loadSettings',e); }
     }
 
     /* ======================
       Auth handlers
-    ====================== */
+      ====================== */
     btnSignup.addEventListener('click', async ()=>{
       try{
         const uc = await auth.createUserWithEmailAndPassword(emailEl.value.trim(), pwEl.value);
@@ -545,9 +539,10 @@
     });
     btnLogout.addEventListener('click', async ()=>{ try{ await auth.signOut(); }catch(e){console.error(e);} });
 
+    /* onAuthStateChanged */
     auth.onAuthStateChanged(async user=>{
       currentUser = user;
-      if(mySubmissionsUnsub){ mySubmissionsUnsub(); mySubmissionsUnsub = null; }
+      if(mySubmissionsUnsub){ mySubmissionsUnsub(); mySubmissionsUnsub=null; }
       if(!user){
         userEmailSpan.textContent='Not signed in';
         btnLogout.style.display='none';
@@ -557,17 +552,15 @@
         mySubmissionsSection.style.display='none';
         resourcesSection.style.display='none';
         adminSection.style.display='none';
-        navAdminWrap.style.display='none';
         profileSummaryHide();
         return;
       }
       userEmailSpan.textContent = user.email;
       btnLogout.style.display='inline-block';
-      authSection.style.display='none'; // hide login box after login
+      authSection.style.display='none';
       submitSection.style.display='block';
       profileSection.style.display='none';
       mySubmissionsSection.style.display='none';
-
       try{
         const uref = db.collection('users').doc(user.uid);
         const ud = await uref.get();
@@ -593,7 +586,7 @@
 
     /* ======================
       Profile load/save
-    ====================== */
+      ====================== */
     async function loadUserProfile(){
       if(!currentUser) return;
       profileSaveStatus.textContent='Loading...';
@@ -649,7 +642,7 @@
 
     /* ======================
       Load profile summary
-    ====================== */
+      ====================== */
     async function loadProfileSummary(){
       if(!currentUser) { profileSummaryHide(); return;}
       try{
@@ -657,31 +650,32 @@
         const data = u.exists ? u.data() : {};
         summaryName.textContent = data.displayName || currentUser.email.split('@')[0];
         summaryBio.textContent = data.bio || '';
-        sidebarAvatar.src = data.avatarUrl || 'https://via.placeholder.com/120?text=User';
-        sidebarAvatar.onerror = ()=> sidebarAvatar.src = 'https://via.placeholder.com/120?text=User';
+        summaryAvatar.src = data.avatarUrl || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\'><rect width=\'100%\' height=\'100%\' fill=\'%23ddd\'/><text x=\'50%\' y=\'50%\' font-size=\'14\' text-anchor=\'middle\' alignment-baseline=\'central\' fill=\'%23666\'>User</text></svg>';
+        summaryAvatar.onerror = ()=> summaryAvatar.src = 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\'><rect width=\'100%\' height=\'100%\' fill=\'%23ddd\'/><text x=\'50%\' y=\'50%\' font-size=\'14\' text-anchor=\'middle\' alignment-baseline=\'central\' fill=\'%23666\'>User</text></svg>';
         const snap = await db.collection('submissions').where('uid','==', currentUser.uid).orderBy('timestamp','desc').get();
         summaryCount.textContent = snap.size;
         const last = snap.docs[0];
         summaryLast.textContent = last ? new Date(last.data().timestamp?.seconds*1000||Date.now()).toLocaleString() : '—';
       }catch(e){ console.error('loadProfileSummary',e); }
     }
-    function profileSummaryHide(){ summaryName.textContent=''; summaryBio.textContent=''; sidebarAvatar.src='https://via.placeholder.com/120?text=User'; summaryCount.textContent='0'; summaryLast.textContent='—'; }
+    function profileSummaryHide(){ document.getElementById('summary-name').textContent=''; document.getElementById('summary-bio').textContent=''; document.getElementById('summary-avatar').src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\'><rect width=\'100%\' height=\'100%\' fill=\'%23ddd\'/></svg>'; document.getElementById('summary-count').textContent='0'; }
 
+    /* clicking profile summary */
     openProfileLink?.addEventListener('click', (e)=>{
       e.preventDefault?.();
       location.hash = '#profile';
     });
 
     /* ======================
-      Helpers
-    ====================== */
+      Utility: get checked values from panel of inputs
+      ====================== */
     function getCheckedValuesFromPanel(panel){
       return Array.from(panel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
     }
 
     /* ======================
       Submit (submissions)
-    ====================== */
+      ====================== */
     btnSubmit.addEventListener('click', async ()=>{
       if(!currentUser) return alert('Sign in to submit');
       const text = entryText.value.trim();
@@ -695,11 +689,15 @@
       const actions = Array.from(entryActionsPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
       const type = entryTypeSelect.value;
       const ucont = udata.continent || null;
-      const payload = { text, tag: type, causes, actions, uid: currentUser.uid, email: currentUser.email, timestamp: firebase.firestore.FieldValue.serverTimestamp(), status: 'pending' };
+      const payload = {
+        text, tag: type, causes, actions, uid: currentUser.uid, email: currentUser.email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'pending'
+      };
       if(ucont) payload.continent = ucont;
       try{
         btnSubmit.disabled=true; submitStatus.textContent='Submitting...';
-        const ref = await db.collection('submissions').add(payload);
+        await db.collection('submissions').add(payload);
         lastSubmitAt = Date.now();
         submitStatus.textContent='Submitted (pending approval)';
         entryText.value=''; entryCausesPanel.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
@@ -710,12 +708,7 @@
 
     /* ======================
       Resources submission
-    ====================== */
-    showResourceFormBtn?.addEventListener('click', ()=>{
-      if(!currentUser) { alert('Sign in to suggest resources'); return; }
-      resourceFormDiv.style.display = resourceFormDiv.style.display === 'none' ? 'block' : 'none';
-    });
-
+      ====================== */
     btnSubmitResource.addEventListener('click', async ()=>{
       if(!currentUser) return alert('Sign in');
       const title = (resourceTitle.value||'').trim();
@@ -727,7 +720,11 @@
       if(!title) return alert('Enter title');
       let isAdmin=false;
       try{ const a = await db.collection('admins').doc(currentUser.uid).get(); if(a.exists && a.data().enabled) isAdmin=true; }catch(e){}
-      const doc = { title, url, description: desc, resourceType: rtype, causes, actions, submittedBy: currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp(), status: isAdmin ? 'approved' : 'pending' };
+      const doc = {
+        title, url, description: desc, resourceType: rtype, causes, actions, submittedBy: currentUser.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        status: isAdmin ? 'approved' : 'pending'
+      };
       try{
         btnSubmitResource.disabled=true; resourceStatus.textContent='Submitting...';
         await db.collection('resources').add(doc);
@@ -737,14 +734,18 @@
     });
 
     /* ======================
-      Bookmarks & Votes (MVP)
-    ====================== */
+      Bookmarks & Votes
+      ====================== */
     async function toggleBookmark(itemId, itemType){
       if(!currentUser) return alert('Sign in to bookmark');
       if(!settings.enableBookmarks) return alert('Bookmarks disabled');
       const bdocRef = db.collection('bookmarks').doc(currentUser.uid).collection('items').doc(itemId);
       const snap = await bdocRef.get();
-      if(snap.exists){ await bdocRef.delete(); } else { await bdocRef.set({ type: itemType, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+      if(snap.exists){
+        await bdocRef.delete();
+      } else {
+        await bdocRef.set({ type: itemType, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      }
     }
     async function toggleVote(itemId, collectionName='submissions'){
       if(!currentUser) return alert('Sign in to vote');
@@ -756,7 +757,8 @@
         const itemDoc = await tx.get(itemRef);
         const curCount = itemDoc.exists && itemDoc.data().voteCount ? itemDoc.data().voteCount : 0;
         if(vdoc.exists){
-          tx.delete(voteRef); tx.update(itemRef, { voteCount: Math.max(0, curCount-1) });
+          tx.delete(voteRef);
+          tx.update(itemRef, { voteCount: Math.max(0, curCount-1) });
         } else {
           tx.set(voteRef, { uid: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
           tx.update(itemRef, { voteCount: (curCount || 0) + 1 });
@@ -766,7 +768,7 @@
 
     /* ======================
       Dashboard: load & filter
-    ====================== */
+      ====================== */
     let cachedApproved = [];
     async function loadDashboardFeed(){
       approvedListEl.textContent='Loading...';
@@ -789,13 +791,14 @@
       renderApproved(items);
     }
     dashboardRefresh.addEventListener('click', loadDashboardFeed);
-    filterCausesBtn.addEventListener('click', (ev)=> { ev.stopPropagation(); filterCausesPanel.style.display = filterCausesPanel.style.display === 'block' ? 'none' : 'block'; });
-    filterActionsBtn.addEventListener('click', (ev)=> { ev.stopPropagation(); filterActionsPanel.style.display = filterActionsPanel.style.display === 'block' ? 'none' : 'block'; });
+    filterCausesBtn.addEventListener('click', ()=> filterCausesPanel.style.display = filterCausesPanel.style.display === 'block' ? 'none' : 'block');
+    filterActionsBtn.addEventListener('click', ()=> filterActionsPanel.style.display = filterActionsPanel.style.display === 'block' ? 'none' : 'block');
     filterCausesPanel.addEventListener('change', applyFiltersAndRender);
     filterActionsPanel.addEventListener('change', applyFiltersAndRender);
     filterType.addEventListener('change', applyFiltersAndRender);
     filterContinent.addEventListener('change', applyFiltersAndRender);
 
+    /* render approved list */
     function renderApproved(items){
       totalCountEl.textContent = items.length;
       const counts = {};
@@ -825,6 +828,7 @@
       approvedListEl.querySelectorAll('.view-my-btn').forEach(btn=> btn.addEventListener('click', ()=>{ location.hash = '#my-submissions'; highlightMyItem(btn.getAttribute('data-id')); }));
     }
 
+    /* highlight item on my-submissions page */
     function highlightMyItem(id){
       location.hash = '#my-submissions';
       setTimeout(()=> {
@@ -834,8 +838,8 @@
     }
 
     /* ======================
-      My submissions (full)
-    ====================== */
+      My submissions (full) - only user's items
+      ====================== */
     function attachMySubmissionsListener(){
       if(!currentUser) return;
       mySubmissionsUnsub = db.collection('submissions').where('uid','==', currentUser.uid).orderBy('timestamp','desc').onSnapshot(snapshot=>{
@@ -859,7 +863,7 @@
 
     function renderMySubmissionsFull(items){
       mySubmissionsFull.innerHTML = '';
-      if(!items.length){ mySubmissionsFull.textContent = 'No submissions'; return; }
+      if(!items.length){ mySubmissionsFull.textContent='No submissions'; return; }
       items.forEach(it=>{
         const el = document.createElement('div'); el.className='entry'; el.setAttribute('data-item', it.id);
         const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
@@ -875,6 +879,7 @@
       });
     }
 
+    /* edit/delete functions */
     async function editSubmission(docId, data){
       const txt = prompt('Edit your submission', data.text);
       if(txt==null) return;
@@ -885,7 +890,7 @@
       try{ await db.collection('submissions').doc(docId).delete(); }catch(e){ alert('Delete failed: '+e.message); }
     }
 
-    /* appeals */
+    // appeals
     async function openAppealDialog(subId){
       if(!currentUser) return alert('Sign in');
       const appealsCol = db.collection('submissions').doc(subId).collection('appeals');
@@ -902,14 +907,23 @@
         }
         const msg = prompt('Write a short appeal message:');
         if(!msg) return;
-        await appealsCol.add({ uid: currentUser.uid, message: msg, status: 'open', timestamp: firebase.firestore.FieldValue.serverTimestamp(), editedAt: null });
+        await appealsCol.add({
+          uid: currentUser.uid,
+          message: msg,
+          status: 'open',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          editedAt: null
+        });
         alert('Appeal submitted. You can edit it while it remains open.');
-      }catch(e){ console.error('openAppealDialog error', e); alert('Could not submit appeal: ' + (e.message || e)); }
+      }catch(e){
+        console.error('openAppealDialog error', e);
+        alert('Could not submit appeal: ' + (e.message || e));
+      }
     }
 
     /* ======================
-      Admin functions (pending/rejected/appeals/resources/analytics)
-    ====================== */
+      Admin functions
+      ====================== */
     async function loadPendingForAdmin(){
       adminPendingEl.textContent='Loading...';
       try{
@@ -925,8 +939,8 @@
             <div class="small">User ID: ${escapeHtml(it.uid)}</div>`;
           const approve = document.createElement('button'); approve.textContent='Approve'; approve.addEventListener('click', ()=> adminChangeStatus(id,'approved'));
           const reject = document.createElement('button'); reject.textContent='Reject'; reject.addEventListener('click', ()=> adminRejectWithReason(id));
-          const markLater = document.createElement('button'); markLater.textContent='Mark for later'; markLater.addEventListener('click', ()=> adminMarkForLater(id));
-          el.appendChild(approve); el.appendChild(reject); el.appendChild(markLater);
+          const mark = document.createElement('button'); mark.textContent='Mark for later'; mark.addEventListener('click', ()=> adminMarkForLater(id));
+          el.appendChild(approve); el.appendChild(reject); el.appendChild(mark);
           adminPendingEl.appendChild(el);
         });
       }catch(e){ adminPendingEl.textContent='Error: '+e.message; console.error(e); }
@@ -1063,7 +1077,9 @@
       try{
         const snap = await db.collection('submissions').where('status','==','approved').orderBy('timestamp','desc').limit(2000).get();
         const items = snap.docs.map(d=>d.data());
-        const causeCounts = {}; const actionCounts = {}; const continentCounts = {};
+        const causeCounts = {};
+        const actionCounts = {};
+        const continentCounts = {};
         items.forEach(it=>{
           (it.causes||[]).forEach(c=> causeCounts[c] = (causeCounts[c]||0)+1);
           (it.actions||[]).forEach(a=> actionCounts[a] = (actionCounts[a]||0)+1);
@@ -1080,38 +1096,132 @@
       }catch(e){ adminAnalyticsEl.textContent='Error: '+e.message; console.error(e); }
     }
 
-    /* admin tab wiring (safe checks instead of optional chaining) */
-    if(adminTabPending) adminTabPending.addEventListener('click', ()=>{ showAdminSubpanel('pending'); loadPendingForAdmin(); });
-    if(adminTabRejected) adminTabRejected.addEventListener('click', ()=>{ showAdminSubpanel('rejected'); loadAdminRejected(); });
-    if(adminTabAppeals) adminTabAppeals.addEventListener('click', ()=>{ showAdminSubpanel('appeals'); loadAdminAppeals(); });
-    if(adminTabResources) adminTabResources.addEventListener('click', ()=>{ showAdminSubpanel('resources'); loadAdminResources(); });
-    if(adminTabAnalytics) adminTabAnalytics.addEventListener('click', ()=>{ showAdminSubpanel('analytics'); loadAnalytics(); });
-    if(adminTabConfig) adminTabConfig.addEventListener('click', ()=> showAdminSubpanel('configuration'));
-    if(adminTabLogs) adminTabLogs.addEventListener('click', ()=> showAdminSubpanel('logs'));
+    /* admin tab wiring */
+    adminTabPending.addEventListener('click', ()=>{ showAdminSubpanel('pending'); loadPendingForAdmin(); });
+    adminTabRejected.addEventListener('click', ()=>{ showAdminSubpanel('rejected'); loadAdminRejected(); });
+    adminTabAppeals.addEventListener('click', ()=>{ showAdminSubpanel('appeals'); loadAdminAppeals(); });
+    adminTabResources.addEventListener('click', ()=>{ showAdminSubpanel('resources'); loadAdminResources(); });
+    adminTabAnalytics.addEventListener('click', ()=>{ showAdminSubpanel('analytics'); loadAnalytics(); });
+    adminTabConfig.addEventListener('click', ()=>{ showAdminSubpanel('configuration'); });
+    adminTabLogs.addEventListener('click', ()=>{ showAdminSubpanel('logs'); });
 
     function showAdminSubpanel(name){
       const panels = { pending: adminPendingEl, rejected: adminRejectedEl, appeals: adminAppealsEl, resources: adminResourcesEl, analytics: adminAnalyticsEl };
-      Object.values(panels).forEach(p=> { if(p) p.style.display = 'none'; });
-      const configAreaElements = [adminCausesTA, adminActionsTA, adminTypesTA, adminResourceTypesTA, btnSaveMaster, adminToggleVotes, adminToggleBookmarks, masterSaveStatus];
-      configAreaElements.forEach(el => { if(!el) return; const wrapper = el.closest ? el.closest('div') : null; if(wrapper) wrapper.style.display = 'none'; else el.style.display = 'none'; });
+      Object.values(panels).forEach(p=> p.style.display = 'none');
 
-      if(name === 'pending'){ if(adminPendingEl) adminPendingEl.style.display='block'; loadPendingForAdmin(); }
-      else if(name === 'rejected'){ if(adminRejectedEl) adminRejectedEl.style.display='block'; loadAdminRejected(); }
-      else if(name === 'appeals'){ if(adminAppealsEl) adminAppealsEl.style.display='block'; loadAdminAppeals(); }
-      else if(name === 'resources'){ if(adminResourcesEl) adminResourcesEl.style.display='block'; loadAdminResources(); }
-      else if(name === 'analytics'){ if(adminAnalyticsEl) adminAnalyticsEl.style.display='block'; loadAnalytics(); }
+      const configAreaElements = [adminCausesTA, adminActionsTA, adminTypesTA, adminResourceTypesTA, btnSaveMaster, adminToggleVotes, adminToggleBookmarks, masterSaveStatus];
+      configAreaElements.forEach(el => {
+        if(!el) return;
+        try{
+          const container = (typeof el.closest === 'function') ? el.closest('div') : null;
+          if(container) container.style.display = 'none';
+          else if(el.style) el.style.display = 'none';
+        }catch(e){}
+      });
+
+      if(name === 'pending'){ adminPendingEl.style.display='block'; loadPendingForAdmin(); }
+      else if(name === 'rejected'){ adminRejectedEl.style.display='block'; loadAdminRejected(); }
+      else if(name === 'appeals'){ adminAppealsEl.style.display='block'; loadAdminAppeals(); }
+      else if(name === 'resources'){ adminResourcesEl.style.display='block'; loadAdminResources(); }
+      else if(name === 'analytics'){ adminAnalyticsEl.style.display='block'; loadAnalytics(); }
       else if(name === 'configuration'){
-        if(adminCausesTA) adminCausesTA.closest('div')?.style.display = 'block';
-        if(adminActionsTA) adminActionsTA.closest('div')?.style.display = 'block';
-        if(adminTypesTA) adminTypesTA.closest('div')?.style.display = 'block';
-        if(adminResourceTypesTA) adminResourceTypesTA.closest('div')?.style.display = 'block';
+        adminPendingEl.style.display='none'; adminRejectedEl.style.display='none'; adminAppealsEl.style.display='none'; adminResourcesEl.style.display='none'; adminAnalyticsEl.style.display='none';
+        if(adminCausesTA) { const c = adminCausesTA.closest && adminCausesTA.closest('div'); if(c) c.style.display = 'block'; }
+        if(adminActionsTA) { const c = adminActionsTA.closest && adminActionsTA.closest('div'); if(c) c.style.display = 'block'; }
+        if(adminTypesTA) { const c = adminTypesTA.closest && adminTypesTA.closest('div'); if(c) c.style.display = 'block'; }
+        if(adminResourceTypesTA) { const c = adminResourceTypesTA.closest && adminResourceTypesTA.closest('div'); if(c) c.style.display = 'block'; }
         if(btnSaveMaster) btnSaveMaster.style.display = 'inline-block';
+        if(adminToggleVotes) { const c = adminToggleVotes.closest && adminToggleVotes.closest('div'); if(c) c.style.display = 'block'; }
       } else if(name === 'logs'){
+        adminPendingEl.style.display='none';
         loadAdminLogs();
-        if(adminRejectedEl) adminRejectedEl.style.display = 'block';
+        adminRejectedEl.style.display = 'block';
       }
     }
 
+    /* ======================
+      Suggestions
+      ====================== */
+    btnSuggest.addEventListener('click', async ()=>{
+      if(!currentUser) return alert('Sign in to suggest');
+      const txt = (suggestText.value||'').trim();
+      if(!txt) return alert('Write suggestion');
+      try{
+        btnSuggest.disabled=true; suggestStatus.textContent='Sending...';
+        await db.collection('suggestions').add({ uid: currentUser.uid, text: txt, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        suggestStatus.textContent='Sent';
+        const suggestSection = btnSuggest.closest('.suggest-box') || document.querySelector('.suggest-box');
+        if(suggestSection) suggestSection.style.display = 'none';
+      }catch(e){ suggestStatus.textContent='Error'; console.error(e);} finally{ btnSuggest.disabled=false; }
+    });
+
+    async function initAdminState(){
+      await loadSettings();
+      if(adminToggleVotes) adminToggleVotes.checked = !!settings.enableVotes;
+      if(adminToggleBookmarks) adminToggleBookmarks.checked = !!settings.enableBookmarks;
+    }
+
+    /* ======================
+      Load resources list
+      ====================== */
+    async function loadApprovedResources(){
+      const el = document.getElementById('resources-list');
+      el.textContent='Loading...';
+      try{
+        const snap = await db.collection('resources').where('status','==','approved').orderBy('timestamp','desc').get();
+        el.innerHTML=''; if(!snap.size){ el.textContent='No resources'; return; }
+        snap.forEach(d=>{
+          const it = d.data(); const node = document.createElement('div'); node.className='entry';
+          node.innerHTML = `<div><a href="${escapeHtml(it.url||'#')}" target="_blank">${escapeHtml(it.title)}</a> <span class="tag">${escapeHtml(it.resourceType)}</span></div><div class="small">${escapeHtml(it.description||'')}</div>`;
+          el.appendChild(node);
+        });
+      }catch(e){ el.textContent='Error: '+e.message; console.error(e); }
+    }
+
+    /* ======================
+      Routing & navigation
+      ====================== */
+    navDashboard.addEventListener('click', ()=> location.hash = '#dashboard');
+    navProfile.addEventListener('click', ()=> location.hash = '#profile');
+    navMy.addEventListener('click', ()=> location.hash = '#my-submissions');
+    navResources.addEventListener('click', ()=> location.hash = '#resources');
+    navAdmin?.addEventListener('click', ()=> location.hash = '#admin');
+
+    window.addEventListener('hashchange', route);
+    function route(){
+      const hash = location.hash || '#dashboard';
+      ['dashboard-section','profile-section','my-submissions-section','resources-section','admin-section','submit-section'].forEach(id=>{
+        const e = document.getElementById(id); if(e) e.style.display = 'none';
+      });
+      if(hash==='#dashboard'){ document.getElementById('dashboard-section').style.display='block'; document.getElementById('submit-section').style.display='block'; loadDashboardFeed(); }
+      else if(hash==='#profile'){ document.getElementById('profile-section').style.display='block'; }
+      else if(hash==='#my-submissions'){ document.getElementById('my-submissions-section').style.display='block'; }
+      else if(hash==='#resources'){ document.getElementById('resources-section').style.display='block'; loadApprovedResources(); }
+      else if(hash==='#admin'){ document.getElementById('admin-section').style.display='block'; }
+      else { document.getElementById('dashboard-section').style.display='block'; document.getElementById('submit-section').style.display='block'; }
+    }
+    route();
+
+    /* ======================
+      Initialization
+      ====================== */
+    (async function init(){
+      await loadMasterLists();
+      await loadSettings();
+      document.addEventListener('click', (ev)=>{
+        if(filterCausesPanel && !filterCausesPanel.contains(ev.target) && ev.target!==filterCausesBtn) filterCausesPanel.style.display='none';
+        if(filterActionsPanel && !filterActionsPanel.contains(ev.target) && ev.target!==filterActionsBtn) filterActionsPanel.style.display='none';
+      });
+      filterCausesPanel.addEventListener('change', ()=> applyFiltersAndRender());
+      filterActionsPanel.addEventListener('change', ()=> applyFiltersAndRender());
+      loadDashboardFeed();
+      loadApprovedResources();
+      initAdminState();
+    })();
+
+    /* ======================
+      Additional admin helpers & logs
+      ====================== */
     async function adminMarkForLater(docId, reason='mark_for_later'){
       if(!confirm('Mark this item for later review?')) return;
       try{
@@ -1124,10 +1234,13 @@
     async function loadAdminLogs(){
       adminRejectedEl.innerHTML = 'Loading logs...';
       try{
-        const snap = await db.collection('submissions').orderBy('timestamp','desc').limit(500).get();
+        const snap = await db.collection('submissions')
+          .where('status','in',['rejected','approved'])
+          .orderBy('timestamp','desc').limit(500).get();
         adminRejectedEl.innerHTML = '';
         for(const d of snap.docs){
-          const it = d.data(); const id = d.id;
+          const it = d.data();
+          const id = d.id;
           const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
           const logDiv = document.createElement('div'); logDiv.className='entry';
           logDiv.innerHTML = `<div><strong>${escapeHtml(it.text)}</strong> <span class="small">(${escapeHtml(it.tag)})</span></div>
@@ -1136,7 +1249,10 @@
             const ml = document.createElement('div'); ml.className='small'; ml.style.marginTop='6px';
             ml.innerHTML = '<em>Moderation history:</em>';
             it.moderationLog.forEach(entry => {
-              const by = escapeHtml(entry.by||'unknown'); const from = escapeHtml(entry.from||''); const to = escapeHtml(entry.to||''); const note = escapeHtml(entry.note||'');
+              const by = escapeHtml(entry.by||'unknown');
+              const from = escapeHtml(entry.from||'');
+              const to = escapeHtml(entry.to||'');
+              const note = escapeHtml(entry.note||'');
               const when = entry.when ? new Date(entry.when.seconds*1000).toLocaleString() : '—';
               ml.innerHTML += `<div class="small">[${when}] ${by}: ${from} → ${to} ${note ? ' — ' + note : ''}</div>`;
             });
@@ -1158,81 +1274,9 @@
       }catch(e){ adminRejectedEl.textContent='Error loading logs: '+e.message; console.error(e); }
     }
 
-    /* ======================
-      Suggestions
-    ====================== */
-    btnSuggest.addEventListener('click', async ()=>{
-      if(!currentUser) return alert('Sign in to suggest');
-      const txt = (suggestText.value||'').trim();
-      if(!txt) return alert('Write suggestion');
-      try{
-        btnSuggest.disabled=true; suggestStatus.textContent='Sending...';
-        await db.collection('suggestions').add({ uid: currentUser.uid, text: txt, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-        suggestStatus.textContent='Sent';
-        const suggestSection = btnSuggest.closest('.suggest-box') || document.querySelector('.suggest-box');
-        if(suggestSection) suggestSection.style.display = 'none';
-      }catch(e){ suggestStatus.textContent='Error'; console.error(e);} finally{ btnSuggest.disabled=false; }
-    });
-
-    /* ======================
-      Load resources list
-    ====================== */
-    async function loadApprovedResources(){
-      const el = document.getElementById('resources-list');
-      el.textContent='Loading...';
-      try{
-        const snap = await db.collection('resources').where('status','==','approved').orderBy('timestamp','desc').get();
-        el.innerHTML=''; if(!snap.size){ el.textContent='No resources'; return; }
-        snap.forEach(d=>{
-          const it = d.data(); const node = document.createElement('div'); node.className='entry';
-          node.innerHTML = `<div><a href="${escapeHtml(it.url||'#')}" target="_blank">${escapeHtml(it.title)}</a> <span class="tag">${escapeHtml(it.resourceType)}</span></div><div class="small">${escapeHtml(it.description||'')}</div>`;
-          el.appendChild(node);
-        });
-      }catch(e){ el.textContent='Error: '+e.message; console.error(e); }
-    }
-
-    /* ======================
-      Routing & navigation
-    ====================== */
-    if(navDashboard) navDashboard.addEventListener('click', ()=> location.hash = '#dashboard');
-    if(navProfile) navProfile.addEventListener('click', ()=> location.hash = '#profile');
-    if(navMy) navMy.addEventListener('click', ()=> location.hash = '#my-submissions');
-    if(navResources) navResources.addEventListener('click', ()=> location.hash = '#resources');
-    if(navAdmin) navAdmin.addEventListener('click', ()=> location.hash = '#admin');
-
-    window.addEventListener('hashchange', route);
-    function route(){
-      const hash = location.hash || '#dashboard';
-      ['dashboard-section','profile-section','my-submissions-section','resources-section','admin-section','submit-section'].forEach(id=>{
-        const e = document.getElementById(id); if(e) e.style.display = 'none';
-      });
-      if(hash==='#dashboard'){ document.getElementById('dashboard-section').style.display='block'; document.getElementById('submit-section').style.display='block'; loadDashboardFeed(); }
-      else if(hash==='#profile'){ document.getElementById('profile-section').style.display='block'; }
-      else if(hash==='#my-submissions'){ document.getElementById('my-submissions-section').style.display='block'; }
-      else if(hash==='#resources'){ document.getElementById('resources-section').style.display='block'; loadApprovedResources(); }
-      else if(hash==='#admin'){ document.getElementById('admin-section').style.display='block'; }
-      else { document.getElementById('dashboard-section').style.display='block'; document.getElementById('submit-section').style.display='block'; }
-    }
-    route();
-
-    /* ======================
-      Initialization
-    ====================== */
-    (async function init(){
-      await loadMasterLists();
-      await loadSettings();
-      document.addEventListener('click', (ev)=>{
-        if(!filterCausesPanel.contains(ev.target) && ev.target!==filterCausesBtn) filterCausesPanel.style.display='none';
-        if(!filterActionsPanel.contains(ev.target) && ev.target!==filterActionsBtn) filterActionsPanel.style.display='none';
-      });
-      filterCausesPanel.addEventListener('change', ()=> applyFiltersAndRender());
-      filterActionsPanel.addEventListener('change', ()=> applyFiltersAndRender());
-      loadDashboardFeed();
-      loadApprovedResources();
-      initAdminState();
-    })();
-
-    async function initAdminState(){ await loadSettings(); if(adminToggleVotes) adminToggleVotes.checked = !!settings.enableVotes; if(adminToggleBookmarks) adminToggleBookmarks.checked = !!settings.enableBookmarks; }
+    // wire toggle panels (stop propagation)
+    filterCausesBtn?.addEventListener('click', (ev)=> { ev.stopPropagation(); filterCausesPanel.style.display = filterCausesPanel.style.display === 'block' ? 'none' : 'block'; });
+    filterActionsBtn?.addEventListener('click', (ev)=> { ev.stopPropagation(); filterActionsPanel.style.display = filterActionsPanel.style.display === 'block' ? 'none' : 'block'; });
 
   </script>
 </body>
