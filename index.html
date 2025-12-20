@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -9,7 +8,7 @@
     :root{--muted:#777;--accent:#0b6efd;--danger:#a00}
     body{font-family:Arial,Helvetica,sans-serif;max-width:1100px;margin:18px auto;padding:0 14px;background:#fff}
     header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    h1{margin:0;font-size:1.2rem}
+    h1{margin:0;font-size:1.2rem;}
     nav{margin-top:12px}
     nav a{color:var(--accent);text-decoration:none;margin-right:10px}
     .layout{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
@@ -62,13 +61,13 @@
 
   <div class="layout">
     <main class="main-content">
-      <!-- AUTH (Inserted back if missing) -->
+      <!-- AUTH -->
       <section id="auth-section">
         <strong>Sign up / Log in (Email)</strong>
         <div class="row" style="margin-top:8px">
           <div style="flex:1 1 260px">
-            <label>Email<input id="email" type="email" /></label>
-            <label>Password<input id="password" type="password" /></label>
+            <label>Email<input id="email" type="email" autocomplete="username" /></label>
+            <label>Password<input id="password" type="password" autocomplete="current-password" /></label>
             <div style="display:flex;gap:8px;margin-top:8px">
               <button id="btn-signup" class="small-btn">Sign up</button>
               <button id="btn-login" class="small-btn">Log in</button>
@@ -88,7 +87,9 @@
           <div class="flex">
             <div>
               Type:
-              <select id="filter-type" style="width:220px;display:inline-block;margin-left:6px"></select>
+              <select id="filter-type" style="width:220px;display:inline-block;margin-left:6px">
+                <option value="">(all)</option>
+              </select>
             </div>
             <div>
               Causes:
@@ -124,13 +125,13 @@
         <div id="approved-list" style="margin-top:12px"></div>
       </section>
 
-      <!-- SUBMIT (kept in dashboard view only) -->
+      <!-- SUBMIT (in dashboard view only) -->
       <section id="submit-section" style="display:block;margin-top:12px">
         <strong>Submit something you did</strong>
         <div class="small muted" id="submit-warning">Please be truthful. Repeated rejected submissions may lead to temporary blocking.</div>
 
         <label>Short description
-          <textarea id="entry-text" rows="3" placeholder="What positive action did you take today?"></textarea>
+          <textarea id="entry-text" rows="3" placeholder="What positive action did you take?"></textarea>
         </label>
 
         <label>Type (choose one)
@@ -164,11 +165,13 @@
           <label>Display name<input id="profile-name" type="text" placeholder="How should your name appear?" /></label>
           <label>Bio<textarea id="profile-bio" rows="3" placeholder="Why doing good matters to you (optional)"></textarea></label>
           <label>Avatar URL<input id="profile-avatar" type="url" placeholder="https://example.com/me.jpg" /></label>
-          <label>Continent (select your continent)<select id="profile-continent">
-            <option value="">(not set)</option>
-            <option>Africa</option><option>Asia</option><option>Europe</option><option>North America</option>
-            <option>South America</option><option>Oceania</option><option>Antarctica</option>
-          </select></label>
+          <label>Continent (select your continent)
+            <select id="profile-continent">
+              <option value="">(not set)</option>
+              <option>Africa</option><option>Asia</option><option>Europe</option><option>North America</option>
+              <option>South America</option><option>Oceania</option><option>Antarctica</option>
+            </select>
+          </label>
           <button id="btn-save-profile">Save profile</button>
           <div id="profile-save-status" class="small"></div>
         </div>
@@ -196,40 +199,47 @@
         <strong>Resources & Ideas</strong>
 
         <div style="margin-top:8px">
-          <label>Title<input id="resource-title" type="text" /></label>
-          <label>URL<input id="resource-url" type="url" placeholder="https://..." /></label>
-          <label>Description<textarea id="resource-desc" rows="3"></textarea></label>
-          <label>Resource type<select id="resource-type"></select></label>
-          <div style="margin-top:8px">
-            <div class="small">Causes (pick any):</div>
-            <div id="resource-causes-panel" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
-          </div>
-          <div style="margin-top:8px">
-            <div class="small">Actions (pick any):</div>
-            <div id="resource-actions-panel" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+          <button id="show-resource-form" class="small-btn">Suggest a resource</button>
+
+          <!-- hidden form -->
+          <div id="resource-form" style="display:none;margin-top:10px">
+            <label>Title<input id="resource-title" type="text" /></label>
+            <label>URL<input id="resource-url" type="url" placeholder="https://..." /></label>
+            <label>Description<textarea id="resource-desc" rows="3"></textarea></label>
+            <label>Resource type<select id="resource-type"></select></label>
+            <div style="margin-top:8px">
+              <div class="small">Causes (pick any):</div>
+              <div id="resource-causes-panel" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+            </div>
+            <div style="margin-top:8px">
+              <div class="small">Actions (pick any):</div>
+              <div id="resource-actions-panel" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="btn-submit-resource">Suggest resource</button>
+              <div id="resource-status" class="small"></div>
+            </div>
           </div>
 
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button id="btn-submit-resource">Suggest resource</button>
-            <div id="resource-status" class="small"></div>
+          <div style="margin-top:12px">
+            <strong>Approved resources</strong>
+            <div id="resources-list" class="small">Loading…</div>
           </div>
-        </div>
-
-        <div style="margin-top:12px">
-          <strong>Approved resources</strong>
-          <div id="resources-list" class="small">Loading…</div>
         </div>
       </section>
 
       <!-- ADMIN -->
       <section id="admin-section" style="display:none">
         <strong>Admin panel</strong>
+
         <div style="margin-top:8px" class="flex">
           <button id="admin-tab-pending" class="small-btn">Pending</button>
           <button id="admin-tab-rejected" class="small-btn">Rejected</button>
           <button id="admin-tab-appeals" class="small-btn">Appeals</button>
           <button id="admin-tab-resources" class="small-btn">Resources</button>
           <button id="admin-tab-analytics" class="small-btn">Analytics</button>
+          <button id="admin-tab-config" class="small-btn">Configuration</button>
+          <button id="admin-tab-logs" class="small-btn">Logs</button>
         </div>
 
         <div id="admin-area" style="margin-top:8px">
@@ -268,7 +278,7 @@
         <p id="summary-bio" class="small" style="min-height:40px"></p>
         <div class="small"><strong id="summary-count">0</strong> actions logged</div>
         <div class="small muted">Last action: <span id="summary-last">—</span></div>
-        <a href="#profile" id="open-profile" style="display:block;margin-top:8px">View full profile →</a>
+        <button id="open-profile" style="display:block;margin-top:8px">View full profile →</button>
       </div>
 
       <div style="margin-top:12px" class="section suggest-box">
@@ -285,919 +295,850 @@
     </aside>
   </div>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-/* ======================
-   CONFIG - replace with your project's config if different
-   ====================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyAZi3WI84OKkzUADIRH-oYwgy_xSHZU-OE",
-  authDomain: "be-the-change-bd30d.firebaseapp.com",
-  projectId: "be-the-change-bd30d",
-  storageBucket: "be-the-change-bd30d.firebasestorage.app",
-  messagingSenderId: "627286973176",
-  appId: "1:627286973176:web:f8d5580c9dc29f4bb8790d",
-  measurementId: "G-0TVCHS9DVV"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* ======================
-   UI refs
-   ====================== */
-const authSection = document.getElementById('auth-section');
-const emailEl = document.getElementById('email');
-const pwEl = document.getElementById('password');
-const btnSignup = document.getElementById('btn-signup');
-const btnLogin = document.getElementById('btn-login');
-const btnLogout = document.getElementById('btn-logout');
-const userEmailSpan = document.getElementById('user-email');
-
-const submitSection = document.getElementById('submit-section');
-const btnSubmit = document.getElementById('btn-submit');
-const entryText = document.getElementById('entry-text');
-const entryTypeSelect = document.getElementById('entry-type');
-const entryCausesPanel = document.getElementById('entry-causes-panel');
-const entryActionsPanel = document.getElementById('entry-actions-panel');
-const submitStatus = document.getElementById('submit-status');
-const submitWarning = document.getElementById('submit-warning');
-
-const filterType = document.getElementById('filter-type');
-const filterCausesBtn = document.getElementById('filter-causes-btn');
-const filterCausesPanel = document.getElementById('filter-causes-panel');
-const filterActionsBtn = document.getElementById('filter-actions-btn');
-const filterActionsPanel = document.getElementById('filter-actions-panel');
-const filterContinent = document.getElementById('filter-continent');
-const dashboardRefresh = document.getElementById('dashboard-refresh');
-const approvedListEl = document.getElementById('approved-list');
-const totalCountEl = document.getElementById('total-count');
-const tagCountsEl = document.getElementById('tag-counts');
-
-const profileSection = document.getElementById('profile-section');
-const profileNameEl = document.getElementById('profile-name');
-const profileBioEl = document.getElementById('profile-bio');
-const profileAvatarEl = document.getElementById('profile-avatar');
-const profileContinentEl = document.getElementById('profile-continent');
-const btnSaveProfile = document.getElementById('btn-save-profile');
-const profileSaveStatus = document.getElementById('profile-save-status');
-const profileSubmissionsList = document.getElementById('profile-submissions-list');
-const rejectedMessagesEl = document.getElementById('rejected-messages');
-const tcBox = document.getElementById('tc-box');
-const btnAcceptTc = document.getElementById('btn-accept-tc');
-
-const mySubmissionsSection = document.getElementById('my-submissions-section');
-const mySubmissionsFull = document.getElementById('my-submissions-full');
-
-const resourcesSection = document.getElementById('resources-section');
-const resourceTitle = document.getElementById('resource-title');
-const resourceUrl = document.getElementById('resource-url');
-const resourceDesc = document.getElementById('resource-desc');
-const resourceTypeSelect = document.getElementById('resource-type');
-const resourceCausesPanel = document.getElementById('resource-causes-panel');
-const resourceActionsPanel = document.getElementById('resource-actions-panel');
-const btnSubmitResource = document.getElementById('btn-submit-resource');
-const resourceStatus = document.getElementById('resource-status');
-
-const adminSection = document.getElementById('admin-section');
-const adminPendingEl = document.getElementById('admin-pending');
-const adminRejectedEl = document.getElementById('admin-rejected');
-const adminAppealsEl = document.getElementById('admin-appeals');
-const adminResourcesEl = document.getElementById('admin-resources');
-const adminAnalyticsEl = document.getElementById('admin-analytics');
-const adminTabPending = document.getElementById('admin-tab-pending');
-const adminTabRejected = document.getElementById('admin-tab-rejected');
-const adminTabAppeals = document.getElementById('admin-tab-appeals');
-const adminTabResources = document.getElementById('admin-tab-resources');
-const adminTabAnalytics = document.getElementById('admin-tab-analytics');
-
-const adminCausesTA = document.getElementById('admin-causes');
-const adminActionsTA = document.getElementById('admin-actions');
-const adminTypesTA = document.getElementById('admin-types');
-const adminResourceTypesTA = document.getElementById('admin-resource-types');
-const btnSaveMaster = document.getElementById('btn-save-master');
-const masterSaveStatus = document.getElementById('master-save-status');
-const adminToggleVotes = document.getElementById('admin-toggle-votes');
-const adminToggleBookmarks = document.getElementById('admin-toggle-bookmarks');
-
-const summaryName = document.getElementById('summary-name');
-const summaryBio = document.getElementById('summary-bio');
-const summaryAvatar = document.getElementById('summary-avatar');
-const summaryCount = document.getElementById('summary-count');
-const summaryLast = document.getElementById('summary-last');
-const openProfileLink = document.getElementById('open-profile');
-
-const suggestText = document.getElementById('suggest-text');
-const btnSuggest = document.getElementById('btn-suggest');
-const suggestStatus = document.getElementById('suggest-status');
-
-const navAdminWrap = document.getElementById('nav-admin-wrap');
-const navDashboard = document.getElementById('nav-dashboard');
-const navProfile = document.getElementById('nav-profile');
-const navMy = document.getElementById('nav-my');
-const navResources = document.getElementById('nav-resources');
-const navAdmin = document.getElementById('nav-admin');
-
-/* ======================
-   State
-   ====================== */
-let currentUser = null;
-let mySubmissionsUnsub = null;
-let approvedSnapshotUnsub = null;
-let masterLists = { causes: [], actions: [], types: [], resourceTypes: [] };
-let settings = { enableVotes: true, enableBookmarks: true };
-let lastSubmitAt = 0; // client rate-limit
-
-/* ======================
-   Utilities
-   ====================== */
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function sortAlpha(a){return a.sort((x,y)=>x.localeCompare(y,'en',{sensitivity:'base'}));}
-
-/* ======================
-   Master lists: load & render
-   - stored in doc config/master
-   ====================== */
-async function loadMasterLists(){
-  try{
-    const doc = await db.collection('config').doc('master').get();
-    if(doc.exists){
-      masterLists = Object.assign(masterLists, doc.data());
-      // ensure arrays
-      ['causes','actions','types','resourceTypes'].forEach(k=>{ masterLists[k]=Array.isArray(masterLists[k])?masterLists[k]:[]; masterLists[k]=sortAlpha(masterLists[k]); });
-    } else {
-      // default lists if none
-      masterLists.causes = ['Climate change','Education','Gender equality','LGBTQ+ rights','Mental health','Physical health','Racial equality','Disabilities','Global conflict'];
-      masterLists.actions = ['Act of kindness','Attended event','Donated','Engaged with media','Ethical purchase','Signing petition','Spread awareness','Volunteered','Voted','Self-care','Challenged behaviour'];
-      masterLists.types = ['environment','charity','community','kindness','other'];
-      masterLists.resourceTypes = ['petition','fundraiser','volunteering','job','website','media','community','article','other'];
-      await db.collection('config').doc('master').set(masterLists, {merge:true});
-    }
-  }catch(e){ console.error('loadMasterLists error',e); }
-  renderMasterListsUI();
-}
-
-/* render master lists into UI panels/dropdowns */
-function renderMasterListsUI(){
-  // entry (submit) cause/action chips
-  entryCausesPanel.innerHTML=''; resourceCausesPanel.innerHTML=''; filterCausesPanel.innerHTML=''; entryActionsPanel.innerHTML=''; resourceActionsPanel.innerHTML=''; filterActionsPanel.innerHTML='';
-  // types
-  entryTypeSelect.innerHTML=''; filterType.innerHTML=''; resourceTypeSelect.innerHTML='';
-  // populate types
-  const types = masterLists.types || [];
-  types.forEach(t=>{
-    const o=document.createElement('option'); o.value=t; o.textContent=t; entryTypeSelect.appendChild(o);
-    const fo=document.createElement('option'); fo.value=t; fo.textContent=t; filterType.appendChild(fo);
-    const ro=document.createElement('option'); ro.value=t; ro.textContent=t; resourceTypeSelect.appendChild(ro);
-  });
-  // causes as checkboxes for entry/resource + filter panel list (alphabetical)
-  (masterLists.causes||[]).forEach((c,i)=>{
-    // entry chips
-    const ch = document.createElement('label'); ch.style.marginRight='8px'; ch.className='chip'; ch.innerHTML = `<input type="checkbox" value="${escapeHtml(c)}" /> ${escapeHtml(c)}`; entryCausesPanel.appendChild(ch);
-    const rch = ch.cloneNode(true); rch.querySelector('input').checked=false; resourceCausesPanel.appendChild(rch);
-    // filter panel (checkbox list inside dropdown)
-    const fp = document.createElement('div'); fp.style.marginBottom='6px'; fp.innerHTML = `<label><input type="checkbox" value="${escapeHtml(c)}"/> ${escapeHtml(c)}</label>`; filterCausesPanel.appendChild(fp);
-  });
-  (masterLists.actions||[]).forEach((a,i)=>{
-    const ch = document.createElement('label'); ch.style.marginRight='8px'; ch.className='chip'; ch.innerHTML = `<input type="checkbox" value="${escapeHtml(a)}" /> ${escapeHtml(a)}`; entryActionsPanel.appendChild(ch);
-    const rch = ch.cloneNode(true); rch.querySelector('input').checked=false; resourceActionsPanel.appendChild(rch);
-    const fp = document.createElement('div'); fp.style.marginBottom='6px'; fp.innerHTML = `<label><input type="checkbox" value="${escapeHtml(a)}"/> ${escapeHtml(a)}</label>`; filterActionsPanel.appendChild(fp);
-  });
-  // admin master list textareas
-  if(adminCausesTA) adminCausesTA.value = (masterLists.causes||[]).join(', ');
-  if(adminActionsTA) adminActionsTA.value = (masterLists.actions||[]).join(', ');
-  if(adminTypesTA) adminTypesTA.value = (masterLists.types||[]).join(', ');
-  if(adminResourceTypesTA) adminResourceTypesTA.value = (masterLists.resourceTypes||[]).join(', ');
-}
-
-/* save master lists (admin) */
-btnSaveMaster?.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Sign in as admin');
-  try{
-    masterSaveStatus.textContent='Saving...';
-    const payload = {
-      causes: adminCausesTA.value.split(',').map(s=>s.trim()).filter(Boolean),
-      actions: adminActionsTA.value.split(',').map(s=>s.trim()).filter(Boolean),
-      types: adminTypesTA.value.split(',').map(s=>s.trim()).filter(Boolean),
-      resourceTypes: adminResourceTypesTA.value.split(',').map(s=>s.trim()).filter(Boolean)
+    // ---------- CONFIG (your project) ----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZi3WI84OKkzUADIRH-oYwgy_xSHZU-OE",
+      authDomain: "be-the-change-bd30d.firebaseapp.com",
+      projectId: "be-the-change-bd30d",
+      storageBucket: "be-the-change-bd30d.firebasestorage.app",
+      messagingSenderId: "627286973176",
+      appId: "1:627286973176:web:f8d5580c9dc29f4bb8790d",
+      measurementId: "G-0TVCHS9DVV"
     };
-    await db.collection('config').doc('master').set(payload, {merge:true});
-    await loadMasterLists();
-    masterSaveStatus.textContent='Saved';
-  }catch(e){ masterSaveStatus.textContent='Error'; console.error(e); }
-});
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-/* admin settings toggles */
-adminToggleVotes?.addEventListener('change', async ()=>{
-  try{
-    settings.enableVotes = adminToggleVotes.checked;
-    await db.collection('config').doc('settings').set(settings, {merge:true});
-  }catch(e){ console.error(e); }
-});
-adminToggleBookmarks?.addEventListener('change', async ()=>{
-  try{
-    settings.enableBookmarks = adminToggleBookmarks.checked;
-    await db.collection('config').doc('settings').set(settings, {merge:true});
-  }catch(e){ console.error(e); }
-});
+    // UI refs
+    const authSection = document.getElementById('auth-section');
+    const emailEl = document.getElementById('email');
+    const pwEl = document.getElementById('password');
+    const btnSignup = document.getElementById('btn-signup');
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
+    const userEmailSpan = document.getElementById('user-email');
 
-/* load settings */
-async function loadSettings(){
-  try{
-    const sdoc = await db.collection('config').doc('settings').get();
-    if(sdoc.exists) settings = Object.assign(settings, sdoc.data());
-    if(adminToggleVotes) adminToggleVotes.checked = !!settings.enableVotes;
-    if(adminToggleBookmarks) adminToggleBookmarks.checked = !!settings.enableBookmarks;
-  }catch(e){ console.error('loadSettings',e); }
-}
+    const submitSection = document.getElementById('submit-section');
+    const btnSubmit = document.getElementById('btn-submit');
+    const entryText = document.getElementById('entry-text');
+    const entryTypeSelect = document.getElementById('entry-type');
+    const entryCausesPanel = document.getElementById('entry-causes-panel');
+    const entryActionsPanel = document.getElementById('entry-actions-panel');
+    const submitStatus = document.getElementById('submit-status');
+    const submitWarning = document.getElementById('submit-warning');
 
-/* ======================
-   Auth handlers
-   ====================== */
-btnSignup.addEventListener('click', async ()=>{
-  try{
-    const uc = await auth.createUserWithEmailAndPassword(emailEl.value.trim(), pwEl.value);
-    console.log('signed up uid', uc.user.uid);
-    alert('Signed up. Create admins/{UID} in Firestore if you need admin access.');
-  }catch(e){ alert('Signup error: '+e.message); }
-});
-btnLogin.addEventListener('click', async ()=>{
-  try{ await auth.signInWithEmailAndPassword(emailEl.value.trim(), pwEl.value); }catch(e){ alert('Login error: '+e.message); }
-});
-btnLogout.addEventListener('click', async ()=>{ try{ await auth.signOut(); }catch(e){console.error(e);} });
+    const filterType = document.getElementById('filter-type');
+    const filterCausesBtn = document.getElementById('filter-causes-btn');
+    const filterCausesPanel = document.getElementById('filter-causes-panel');
+    const filterActionsBtn = document.getElementById('filter-actions-btn');
+    const filterActionsPanel = document.getElementById('filter-actions-panel');
+    const filterContinent = document.getElementById('filter-continent');
+    const dashboardRefresh = document.getElementById('dashboard-refresh');
+    const approvedListEl = document.getElementById('approved-list');
+    const totalCountEl = document.getElementById('total-count');
+    const tagCountsEl = document.getElementById('tag-counts');
 
-/* onAuthStateChanged */
-auth.onAuthStateChanged(async user=>{
-  currentUser = user;
-  // cleanup
-  if(mySubmissionsUnsub){ mySubmissionsUnsub(); mySubmissionsUnsub=null; }
-  if(!user){
-    userEmailSpan.textContent='Not signed in';
-    btnLogout.style.display='none';
-    authSection.style.display='block';
-    submitSection.style.display='block';
-    profileSection.style.display='none';
-    mySubmissionsSection.style.display='none';
-    resourcesSection.style.display='none';
-    adminSection.style.display='none';
-    profileSummaryHide();
-    return;
-  }
-  userEmailSpan.textContent = user.email;
-  btnLogout.style.display='inline-block';
-  authSection.style.display='none';
-  // show limited sections
-  submitSection.style.display='block';
-  profileSection.style.display='none';
-  mySubmissionsSection.style.display='none';
-  // init user doc if not exists
-  try{
-    const uref = db.collection('users').doc(user.uid);
-    const ud = await uref.get();
-    if(!ud.exists) await uref.set({ createdAt: firebase.firestore.FieldValue.serverTimestamp(), displayName: user.email.split('@')[0] }, {merge:true});
-  }catch(e){ console.error(e); }
+    const profileSection = document.getElementById('profile-section');
+    const profileNameEl = document.getElementById('profile-name');
+    const profileBioEl = document.getElementById('profile-bio');
+    const profileAvatarEl = document.getElementById('profile-avatar');
+    const profileContinentEl = document.getElementById('profile-continent');
+    const btnSaveProfile = document.getElementById('btn-save-profile');
+    const profileSaveStatus = document.getElementById('profile-save-status');
+    const profileSubmissionsList = document.getElementById('profile-submissions-list');
+    const rejectedMessagesEl = document.getElementById('rejected-messages');
+    const tcBox = document.getElementById('tc-box');
+    const btnAcceptTc = document.getElementById('btn-accept-tc');
 
-  // load profile and listeners
-  await loadUserProfile();
-  attachMySubmissionsListener();
-  await loadProfileSummary();
+    const mySubmissionsSection = document.getElementById('my-submissions-section');
+    const mySubmissionsFull = document.getElementById('my-submissions-full');
 
-  // admin check
-  try{
-    const adminDoc = await db.collection('admins').doc(user.uid).get();
-    if(adminDoc.exists && adminDoc.data().enabled === true){
-      adminSection.style.display='block';
-      navAdminWrap.style.display='inline';
-      // pre-load pending
-      loadPendingForAdmin();
-    } else {
-      adminSection.style.display='none';
-      navAdminWrap.style.display='none';
-    }
-  }catch(e){ console.error(e); }
-});
+    const resourcesSection = document.getElementById('resources-section');
+    const resourceTitle = document.getElementById('resource-title');
+    const resourceUrl = document.getElementById('resource-url');
+    const resourceDesc = document.getElementById('resource-desc');
+    const resourceTypeSelect = document.getElementById('resource-type');
+    const resourceCausesPanel = document.getElementById('resource-causes-panel');
+    const resourceActionsPanel = document.getElementById('resource-actions-panel');
+    const btnSubmitResource = document.getElementById('btn-submit-resource');
+    const resourceStatus = document.getElementById('resource-status');
+    const showResourceFormBtn = document.getElementById('show-resource-form');
+    const resourceFormDiv = document.getElementById('resource-form');
 
-/* ======================
-   Profile load/save
-   ====================== */
-async function loadUserProfile(){
-  if(!currentUser) return;
-  profileSaveStatus.textContent='Loading...';
-  try{
-    const uref = db.collection('users').doc(currentUser.uid);
-    const ud = await uref.get();
-    const data = ud.exists ? ud.data() : {};
-    profileNameEl.value = data.displayName || currentUser.email.split('@')[0];
-    profileBioEl.value = data.bio || '';
-    profileAvatarEl.value = data.avatarUrl || '';
-    profileContinentEl.value = data.continent || '';
-    // messages
-    const rejectedCount = data.rejectedCount || 0;
-    const blocked = !!data.blocked;
-    const tcsRequired = !!data.tcsRequired;
-    const tcsAccepted = !!data.tcsAccepted;
-    if(blocked) {
-      rejectedMessagesEl.innerHTML = 'Your account is blocked from posting due to repeated rejections. You may appeal.';
-    } else if(tcsRequired && !tcsAccepted) {
-      rejectedMessagesEl.innerHTML = `You have ${rejectedCount} rejected submissions. Please accept Terms & Guidance to continue posting.`;
-      tcBox.style.display='block';
-    } else if(rejectedCount>0){
-      rejectedMessagesEl.innerHTML = `You have ${rejectedCount} rejected submissions.`;
-      tcBox.style.display='none';
-    } else {
-      rejectedMessagesEl.innerHTML = '';
-      tcBox.style.display='none';
-    }
-    profileSaveStatus.textContent='';
-  }catch(e){ profileSaveStatus.textContent='Error'; console.error(e); }
-}
+    const adminSection = document.getElementById('admin-section');
+    const adminPendingEl = document.getElementById('admin-pending');
+    const adminRejectedEl = document.getElementById('admin-rejected');
+    const adminAppealsEl = document.getElementById('admin-appeals');
+    const adminResourcesEl = document.getElementById('admin-resources');
+    const adminAnalyticsEl = document.getElementById('admin-analytics');
+    const adminTabPending = document.getElementById('admin-tab-pending');
+    const adminTabRejected = document.getElementById('admin-tab-rejected');
+    const adminTabAppeals = document.getElementById('admin-tab-appeals');
+    const adminTabResources = document.getElementById('admin-tab-resources');
+    const adminTabAnalytics = document.getElementById('admin-tab-analytics');
 
-btnSaveProfile.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Sign in');
-  profileSaveStatus.textContent='Saving...';
-  try{
-    await db.collection('users').doc(currentUser.uid).set({
-      displayName: profileNameEl.value.trim(),
-      bio: profileBioEl.value.trim(),
-      avatarUrl: profileAvatarEl.value.trim(),
-      continent: profileContinentEl.value || null
-    }, {merge:true});
-    profileSaveStatus.textContent='Saved';
-    loadProfileSummary();
-  }catch(e){ profileSaveStatus.textContent='Error'; console.error(e); }
-});
+    const adminCausesTA = document.getElementById('admin-causes');
+    const adminActionsTA = document.getElementById('admin-actions');
+    const adminTypesTA = document.getElementById('admin-types');
+    const adminResourceTypesTA = document.getElementById('admin-resource-types');
+    const btnSaveMaster = document.getElementById('btn-save-master');
+    const masterSaveStatus = document.getElementById('master-save-status');
+    const adminToggleVotes = document.getElementById('admin-toggle-votes');
+    const adminToggleBookmarks = document.getElementById('admin-toggle-bookmarks');
 
-btnAcceptTc?.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Sign in');
-  await db.collection('users').doc(currentUser.uid).set({ tcsAccepted:true, tcsRequired:false }, {merge:true});
-  tcBox.style.display='none';
-  rejectedMessagesEl.textContent='Terms accepted — you may post.';
-});
+    const summaryName = document.getElementById('summary-name');
+    const summaryBio = document.getElementById('summary-bio');
+    const summaryAvatar = document.getElementById('summary-avatar');
+    const summaryCount = document.getElementById('summary-count');
+    const summaryLast = document.getElementById('summary-last');
+    const openProfileLink = document.getElementById('open-profile');
 
-/* ======================
-   Load profile summary
-   ====================== */
-async function loadProfileSummary(){
-  if(!currentUser) { profileSummaryHide(); return;}
-  try{
-    const u = await db.collection('users').doc(currentUser.uid).get();
-    const data = u.exists ? u.data() : {};
-    summaryName.textContent = data.displayName || currentUser.email.split('@')[0];
-    summaryBio.textContent = data.bio || '';
-    summaryAvatar.src = data.avatarUrl || 'https://via.placeholder.com/120?text=User';
-    summaryAvatar.onerror = ()=> summaryAvatar.src = 'https://via.placeholder.com/120?text=User';
-    const snap = await db.collection('submissions').where('uid','==', currentUser.uid).get();
-    summaryCount.textContent = snap.size;
-    const last = snap.docs[0];
-    summaryLast.textContent = last ? new Date(last.data().timestamp?.seconds*1000||Date.now()).toLocaleString() : '—';
-  }catch(e){ console.error('loadProfileSummary',e); }
-}
-function profileSummaryHide(){ document.getElementById('summary-name').textContent=''; document.getElementById('summary-bio').textContent=''; document.getElementById('summary-avatar').src='https://via.placeholder.com/120?text=User'; document.getElementById('summary-count').textContent='0'; }
+    const suggestText = document.getElementById('suggest-text');
+    const btnSuggest = document.getElementById('btn-suggest');
+    const suggestStatus = document.getElementById('suggest-status');
 
-/* clicking profile summary */
-openProfileLink?.addEventListener('click', (e)=>{ e.preventDefault(); location.hash = '#profile'; });
+    const navAdminWrap = document.getElementById('nav-admin-wrap');
+    const navDashboard = document.getElementById('nav-dashboard');
+    const navProfile = document.getElementById('nav-profile');
+    const navMy = document.getElementById('nav-my');
+    const navResources = document.getElementById('nav-resources');
+    const navAdmin = document.getElementById('nav-admin');
 
-/* ======================
-   Utility: get checked values from panel of inputs
-   ====================== */
-function getCheckedValuesFromPanel(panel){
-  return Array.from(panel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
-}
+    // state
+    let currentUser = null;
+    let mySubmissionsUnsub = null;
+    let cachedApproved = [];
+    let masterLists = { causes: [], actions: [], types: [], resourceTypes: [] };
+    let settings = { enableVotes: true, enableBookmarks: true };
+    let lastSubmitAt = 0;
 
-/* ======================
-   Submit (submissions)
-   - client rate-limit + server enforcement suggested
-   ====================== */
-btnSubmit.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Sign in to submit');
-  const text = entryText.value.trim();
-  if(!text) return alert('Enter description');
-  if(Date.now() - lastSubmitAt < 30*1000) return alert('Please wait 30s between submissions (client throttle)');
-  // Check user blocked / tcs
-  const udoc = await db.collection('users').doc(currentUser.uid).get();
-  const udata = udoc.exists ? udoc.data() : {};
-  if(udata.blocked) return alert('Your account is blocked from posting.');
-  if(udata.tcsRequired && !udata.tcsAccepted) return alert('Accept Terms & Guidance in your profile before posting.');
-  // collect selected causes/actions from entry panels
-  const causes = Array.from(entryCausesPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
-  const actions = Array.from(entryActionsPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
-  const type = entryTypeSelect.value;
-  // only include continent if user has one on profile
-  const ucont = udata.continent || null;
-  const payload = {
-    text, tag: type, causes, actions, uid: currentUser.uid, email: currentUser.email,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    status: 'pending'
-  };
-  if(ucont) payload.continent = ucont;
-  // server suggestion: check user's lastSubmission timestamp to rate-limit server-side
-  try{
-    btnSubmit.disabled=true; submitStatus.textContent='Submitting...';
-    const ref = await db.collection('submissions').add(payload);
-    lastSubmitAt = Date.now();
-    submitStatus.textContent='Submitted (pending approval)';
-    entryText.value=''; entryCausesPanel.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
-    entryActionsPanel.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
-    // optionally write lastSubmission timestamp on user (client-side, not trusted)
-    await db.collection('users').doc(currentUser.uid).set({ lastSubmission: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
-  }catch(e){ submitStatus.textContent='Error: '+e.message; console.error(e);} finally{ btnSubmit.disabled=false; }
-});
+    // small helpers
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function sortAlpha(arr){ return (arr||[]).slice().sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'})); }
 
-/* ======================
-   Resources submission (non-admin -> pending; admins can post directly)
-   ====================== */
-btnSubmitResource.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Sign in');
-  const title = (resourceTitle.value||'').trim();
-  const url = (resourceUrl.value||'').trim();
-  const desc = (resourceDesc.value||'').trim();
-  const rtype = resourceTypeSelect.value;
-  const causes = Array.from(resourceCausesPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
-  const actions = Array.from(resourceActionsPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
-  if(!title) return alert('Enter title');
-  // if admin, allow immediate approve
-  let isAdmin=false;
-  try{ const a = await db.collection('admins').doc(currentUser.uid).get(); if(a.exists && a.data().enabled) isAdmin=true; }catch(e){}
-  const doc = {
-    title, url, description: desc, resourceType: rtype, causes, actions, submittedBy: currentUser.uid,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    status: isAdmin ? 'approved' : 'pending'
-  };
-  try{
-    btnSubmitResource.disabled=true; resourceStatus.textContent='Submitting...';
-    await db.collection('resources').add(doc);
-    resourceStatus.textContent = isAdmin ? 'Posted' : 'Submitted (pending approval)';
-    resourceTitle.value=''; resourceUrl.value=''; resourceDesc.value=''; resourceCausesPanel.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
-  }catch(e){ resourceStatus.textContent='Error: '+e.message; console.error(e);} finally{ btnSubmitResource.disabled=false; }
-});
-
-/* ======================
-   Bookmarks & Votes
-   - stored as per-user bookmark collection: bookmarks/{uid}/{itemId}: {type:'submission'|'resource'}
-   - votes stored under submissions/{id}/votes/{uid} and resource/{id}/votes/{uid}; and a field voteCount updated via transaction
-   - toggled by admin in settings
-   ====================== */
-async function toggleBookmark(itemId, itemType){
-  if(!currentUser) return alert('Sign in to bookmark');
-  if(!settings.enableBookmarks) return alert('Bookmarks disabled');
-  const bdocRef = db.collection('bookmarks').doc(currentUser.uid).collection('items').doc(itemId);
-  const snap = await bdocRef.get();
-  if(snap.exists){
-    await bdocRef.delete();
-  } else {
-    await bdocRef.set({ type: itemType, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  }
-}
-async function toggleVote(itemId, collectionName='submissions'){
-  if(!currentUser) return alert('Sign in to vote');
-  if(!settings.enableVotes) return alert('Voting disabled');
-  const voteRef = db.collection(collectionName).doc(itemId).collection('votes').doc(currentUser.uid);
-  const itemRef = db.collection(collectionName).doc(itemId);
-  await db.runTransaction(async tx=>{
-    const vdoc = await tx.get(voteRef);
-    const itemDoc = await tx.get(itemRef);
-    const curCount = itemDoc.exists && itemDoc.data().voteCount ? itemDoc.data().voteCount : 0;
-    if(vdoc.exists){
-      tx.delete(voteRef);
-      tx.update(itemRef, { voteCount: Math.max(0, curCount-1) });
-    } else {
-      tx.set(voteRef, { uid: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-      tx.update(itemRef, { voteCount: (curCount || 0) + 1 });
-    }
-  });
-}
-
-/* ======================
-   Dashboard: load & filter
-   - client-side filter (works for MVP). For scale, use paginated server endpoints or composite indexes.
-   ====================== */
-let cachedApproved = [];
-async function loadDashboardFeed(){
-  approvedListEl.textContent='Loading...';
-  try{
-    const snap = await db.collection('submissions').where('status','==','approved').orderBy('timestamp','desc').limit(1000).get();
-    cachedApproved = snap.docs.map(d=>({ id:d.id, ...d.data()}));
-    applyFiltersAndRender();
-  }catch(e){ approvedListEl.textContent='Error: '+e.message; console.error(e); }
-}
-function applyFiltersAndRender(){
-  // read filters
-  const ftype = filterType.value || '';
-  const fcauses = Array.from(filterCausesPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
-  const factions = Array.from(filterActionsPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
-  const fcont = filterContinent.value || '';
-  // filter logic: OR within, AND across
-  let items = cachedApproved.slice();
-  if(ftype) items = items.filter(it => it.tag === ftype);
-  if(fcauses.length) items = items.filter(it => (it.causes||[]).some(c=>fcauses.includes(c)));
-  if(factions.length) items = items.filter(it => (it.actions||[]).some(a=>factions.includes(a)));
-  if(fcont) items = items.filter(it => (it.continent || '') === fcont);
-  renderApproved(items);
-}
-dashboardRefresh.addEventListener('click', loadDashboardFeed);
-filterCausesBtn.addEventListener('click', ()=> filterCausesPanel.style.display = filterCausesPanel.style.display === 'block' ? 'none' : 'block');
-filterActionsBtn.addEventListener('click', ()=> filterActionsPanel.style.display = filterActionsPanel.style.display === 'block' ? 'none' : 'block');
-filterCausesPanel.addEventListener('change', applyFiltersAndRender);
-filterActionsPanel.addEventListener('change', applyFiltersAndRender);
-filterType.addEventListener('change', applyFiltersAndRender);
-filterContinent.addEventListener('change', applyFiltersAndRender);
-
-/* render approved list */
-function renderApproved(items){
-  totalCountEl.textContent = items.length;
-  const counts = {};
-  items.forEach(it => counts[it.tag] = (counts[it.tag]||0) + 1);
-  tagCountsEl.innerHTML='';
-  for(const [k,v] of Object.entries(counts)){ const el = document.createElement('div'); el.className='count-card'; el.textContent=`${k}: ${v}`; tagCountsEl.appendChild(el); }
-  approvedListEl.innerHTML='';
-  if(!items.length){ approvedListEl.textContent='No approved entries'; return; }
-  items.forEach(it=>{
-    const d = document.createElement('div'); d.className='entry';
-    const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
-    const causesText = (it.causes||[]).join(', ') || '—';
-    const actionsText = (it.actions||[]).join(', ') || '—';
-    const voteCount = it.voteCount || 0;
-    // count bookmarks is not cheap; show number of bookmarks only if stored as field bookmarkCount (not included here). For MVP, omit bookmarkCount or compute server-side.
-    d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
-      <div class="small">Causes: ${escapeHtml(causesText)} • Actions: ${escapeHtml(actionsText)} • Continent: ${escapeHtml(it.continent||'—')}</div>
-      <div class="small">by ${escapeHtml(it.email)} • ${time}</div>
-      <div style="margin-top:6px" class="flex small">
-        ${settings.enableVotes ? `<button class="vote-btn small-btn" data-id="${it.id}">▲ Vote (${voteCount})</button>` : ''}
-        ${settings.enableBookmarks ? `<button class="bookmark-btn small-btn" data-id="${it.id}">★ Bookmark</button>` : ''}
-        <button class="view-my-btn small-btn" data-id="${it.id}">View in My submissions</button>
-      </div>`;
-    approvedListEl.appendChild(d);
-  });
-  // wire buttons
-  approvedListEl.querySelectorAll('.vote-btn').forEach(btn=> btn.addEventListener('click', async (e)=>{ await toggleVote(btn.getAttribute('data-id'),'submissions'); loadDashboardFeed(); }));
-  approvedListEl.querySelectorAll('.bookmark-btn').forEach(btn=> btn.addEventListener('click', async (e)=>{ await toggleBookmark(btn.getAttribute('data-id'),'submission'); btn.textContent='★ Bookmarked'; }));
-  approvedListEl.querySelectorAll('.view-my-btn').forEach(btn=> btn.addEventListener('click', ()=>{ location.hash = '#my-submissions'; highlightMyItem(btn.getAttribute('data-id')); }));
-}
-
-/* highlight item on my-submissions page */
-function highlightMyItem(id){
-  // navigate to my-submissions page; when loaded, attempt to scroll and highlight
-  location.hash = '#my-submissions';
-  setTimeout(()=> {
-    const el = document.querySelector(`#my-submissions-full [data-item="${id}"]`);
-    if(el){ el.style.outline='3px solid #ffeb3b'; el.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>el.style.outline='',4000); }
-  }, 500);
-}
-
-/* ======================
-   My submissions (full) - only user's items
-   ====================== */
-function attachMySubmissionsListener(){
-  if(!currentUser) return;
-  mySubmissionsUnsub = db.collection('submissions').where('uid','==', currentUser.uid).orderBy('timestamp','desc').onSnapshot(snapshot=>{
-    const items = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
-    renderProfileSubmissions(items);
-    renderMySubmissionsFull(items);
-  }, err=>{ console.error('my subs onSnapshot',err); profileSubmissionsList.textContent='Error loading your submissions'; mySubmissionsFull.textContent='Error loading your submissions'; });
-}
-
-function renderProfileSubmissions(items){
-  profileSubmissionsList.innerHTML = '';
-  if(!items.length){ profileSubmissionsList.textContent='You have no submissions yet.'; return; }
-  items.forEach(it=>{
-    const el = document.createElement('div'); el.className='entry';
-    const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
-    el.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div><div class="small">status: ${escapeHtml(it.status)} • ${time}</div>`;
-    el.addEventListener('click', ()=>{ location.hash = '#my-submissions'; highlightMyItem(it.id); });
-    profileSubmissionsList.appendChild(el);
-  });
-}
-
-function renderMySubmissionsFull(items){
-  mySubmissionsFull.innerHTML = '';
-  if(!items.length){ mySubmissionsFull.textContent='No submissions'; return; }
-  items.forEach(it=>{
-    const el = document.createElement('div'); el.className='entry'; el.setAttribute('data-item', it.id);
-    const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
-    el.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
-      <div class="small">Causes: ${escapeHtml((it.causes||[]).join(', ')||'—')} • Actions: ${escapeHtml((it.actions||[]).join(', ')||'—')}</div>
-      <div class="small">status: ${escapeHtml(it.status)} • ${time}</div>`;
-    // controls
-    const controls = document.createElement('div'); controls.className='flex'; controls.style.marginTop='6px';
-    if(it.status==='pending'){ const ebtn=document.createElement('button'); ebtn.textContent='Edit'; ebtn.addEventListener('click', ()=> editSubmission(it.id,it)); controls.appendChild(ebtn);
-      const dbtn = document.createElement('button'); dbtn.textContent='Delete'; dbtn.addEventListener('click', ()=> deleteSubmission(it.id)); controls.appendChild(dbtn); }
-    if(it.status==='rejected'){ const abtn=document.createElement('button'); abtn.textContent='Appeal'; abtn.addEventListener('click', ()=> openAppealDialog(it.id)); controls.appendChild(abtn); }
-    el.appendChild(controls);
-    mySubmissionsFull.appendChild(el);
-  });
-}
-
-/* edit/delete functions */
-async function editSubmission(docId, data){
-  const txt = prompt('Edit your submission', data.text);
-  if(txt==null) return;
-  try{ await db.collection('submissions').doc(docId).update({ text: txt }); }catch(e){ alert('Update failed: '+e.message); }
-}
-async function deleteSubmission(docId){
-  if(!confirm('Delete?')) return;
-  try{ await db.collection('submissions').doc(docId).delete(); }catch(e){ alert('Delete failed: '+e.message); }
-}
-
-/* appeal */
-async function openAppealDialog(subId){
-  if(!currentUser) return alert('Sign in');
-  const msg = prompt('Write a short appeal message:');
-  if(!msg) return;
-  try{ await db.collection('submissions').doc(subId).collection('appeals').add({ uid: currentUser.uid, message: msg, status:'open', timestamp: firebase.firestore.FieldValue.serverTimestamp() }); alert('Appeal submitted'); }catch(e){ alert('Appeal failed: '+e.message); }
-}
-
-/* ======================
-   Admin functions: pending, rejected, appeals, resources, analytics
-   ====================== */
-async function loadPendingForAdmin(){
-  adminPendingEl.textContent='Loading...';
-  try{
-    const snap = await db.collection('submissions').where('status','==','pending').orderBy('timestamp','asc').get();
-    adminPendingEl.innerHTML=''; if(!snap.size){ adminPendingEl.textContent='No pending submissions'; return; }
-    snap.forEach(d=>{
-      const it = d.data(); const id=d.id;
-      const el = document.createElement('div'); el.className='entry';
-      const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString(): '—';
-      el.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
-        <div class="small">Causes: ${escapeHtml((it.causes||[]).join(', '))} • Actions: ${escapeHtml((it.actions||[]).join(', '))}</div>
-        <div class="small">from ${escapeHtml(it.email)} • ${time}</div>
-        <div class="small">User ID: ${escapeHtml(it.uid)}</div>`;
-      const approve = document.createElement('button'); approve.textContent='Approve'; approve.addEventListener('click', ()=> adminChangeStatus(id,'approved'));
-      const reject = document.createElement('button'); reject.textContent='Reject'; reject.addEventListener('click', ()=> adminRejectWithReason(id));
-      el.appendChild(approve); el.appendChild(reject);
-      adminPendingEl.appendChild(el);
-    });
-  }catch(e){ adminPendingEl.textContent='Error: '+e.message; console.error(e); }
-}
-
-async function adminChangeStatus(docId, newStatus){
-  try{
-    const docRef = db.collection('submissions').doc(docId);
-    const snap = await docRef.get();
-    if(!snap.exists) return alert('Missing');
-    await docRef.update({ status: newStatus });
-    if(newStatus==='rejected'){
-      const uid = snap.data().uid;
-      // increment counter, history, set tcs/blocked accordingly (transaction)
-      const userRef = db.collection('users').doc(uid);
-      await db.runTransaction(async tx=>{
-        const u = await tx.get(userRef); const udata = u.exists?u.data():{};
-        const rc = (udata.rejectedCount||0)+1;
-        const history = udata.rejectedHistory||[]; history.push({ submissionId: docId, time: firebase.firestore.FieldValue.serverTimestamp() });
-        const updates = { rejectedCount: rc, rejectedHistory: history };
-        if(rc>=3) updates.tcsRequired = true;
-        if(rc>=5) updates.blocked = true;
-        tx.set(userRef, updates, {merge:true});
-      });
-    }
-    loadPendingForAdmin(); loadAdminRejected();
-  }catch(e){ alert('Admin update failed: '+e.message); console.error(e); }
-}
-
-async function adminRejectWithReason(docId){
-  const reason = prompt('Enter rejection reason (short):') || 'No reason';
-  try{
-    const docRef = db.collection('submissions').doc(docId);
-    await docRef.update({ status:'rejected', rejectionReason: reason });
-    // same counter logic
-    const snap = await docRef.get();
-    const uid = snap.data().uid;
-    await db.runTransaction(async tx=>{
-      const userRef = db.collection('users').doc(uid);
-      const u = await tx.get(userRef); const udata = u.exists?u.data():{};
-      const rc=(udata.rejectedCount||0)+1; const history=udata.rejectedHistory||[]; history.push({ submissionId: docId, time: firebase.firestore.FieldValue.serverTimestamp(), reason });
-      const updates={ rejectedCount: rc, rejectedHistory: history };
-      if(rc>=3) updates.tcsRequired=true;
-      if(rc>=5) updates.blocked=true;
-      tx.set(userRef, updates, {merge:true});
-    });
-    loadPendingForAdmin(); loadAdminRejected();
-  }catch(e){ alert('Reject failed: '+e.message); console.error(e); }
-}
-
-/* load rejected */
-async function loadAdminRejected(){
-  adminRejectedEl.textContent='Loading...';
-  try{
-    const snap = await db.collection('submissions').where('status','==','rejected').orderBy('timestamp','desc').get();
-    adminRejectedEl.innerHTML=''; if(!snap.size){ adminRejectedEl.textContent='No rejected submissions'; return; }
-    snap.forEach(d=>{
-      const it=d.data(), id=d.id; const el=document.createElement('div'); el.className='entry';
-      const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
-      el.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
-        <div class="small">from ${escapeHtml(it.email)} • ${time}</div>
-        <div class="small">User ID: ${escapeHtml(it.uid)} • Reason: ${escapeHtml(it.rejectionReason||'—')}</div>`;
-      adminRejectedEl.appendChild(el);
-    });
-  }catch(e){ adminRejectedEl.textContent='Error: '+e.message; console.error(e); }
-}
-
-/* appeals */
-async function loadAdminAppeals(){
-  adminAppealsEl.textContent='Loading...';
-  try{
-    adminAppealsEl.innerHTML='';
-    // search recent submissions for appeals
-    const subs = await db.collection('submissions').orderBy('timestamp','desc').limit(500).get();
-    for(const s of subs.docs){
-      const appeals = await s.ref.collection('appeals').where('status','==','open').get();
-      appeals.forEach(a=>{
-        const ad=a.data(), aid=a.id;
-        const el=document.createElement('div'); el.className='entry';
-        el.innerHTML = `<div><strong>Appeal</strong> for ${s.id} (submission by ${escapeHtml(s.data().email)})</div>
-          <div class="small">${escapeHtml(ad.message)}</div>
-          <div class="small">from user: ${escapeHtml(ad.uid)} • ${new Date(ad.timestamp?.seconds*1000||Date.now()).toLocaleString()}</div>`;
-        const actions = document.createElement('div'); actions.className='flex'; actions.style.marginTop='6px';
-        ['approve_unblock','approve_unblock_warn','reject_unblock','reject_block','mark_resolved_nochange'].forEach(action=>{
-          const b=document.createElement('button'); b.textContent=action.replace(/_/g,' '); b.className='small-btn';
-          b.addEventListener('click', ()=> resolveAppeal(s.id, aid, action));
-          actions.appendChild(b);
-        });
-        el.appendChild(actions); adminAppealsEl.appendChild(el);
-      });
-    }
-  }catch(e){ adminAppealsEl.textContent='Error: '+e.message; console.error(e); }
-}
-
-/* resolve appeal */
-async function resolveAppeal(subId, appealId, action){
-  try{
-    const subRef = db.collection('submissions').doc(subId);
-    const subSnap = await subRef.get(); if(!subSnap.exists) throw new Error('Submission missing');
-    const uid = subSnap.data().uid; const userRef = db.collection('users').doc(uid);
-    await db.runTransaction(async tx=>{
-      const appealRef = subRef.collection('appeals').doc(appealId);
-      tx.update(appealRef, { status:'resolved', resolvedBy: currentUser.uid, resolvedAt: firebase.firestore.FieldValue.serverTimestamp(), resolution: action});
-      const u = await tx.get(userRef); const udata = u.exists?u.data():{};
-      const updates = { lastAppealOutcome: action };
-      if(action==='approve_unblock' || action==='approve_unblock_warn' || action==='reject_unblock') updates.blocked = false;
-      if(action==='reject_block') updates.blocked = true;
-      if(action==='approve_unblock_warn') updates.warning = (udata.warning||0)+1;
-      tx.set(userRef, updates, { merge:true });
-    });
-    alert('Appeal resolved: '+action);
-    loadAdminAppeals();
-  }catch(e){ alert('Resolve failed: '+e.message); console.error(e); }
-}
-
-/* admin resources list */
-async function loadAdminResources(){
-  adminResourcesEl.textContent='Loading...';
-  try{
-    const snap = await db.collection('resources').orderBy('timestamp','desc').limit(500).get();
-    adminResourcesEl.innerHTML=''; if(!snap.size){ adminResourcesEl.textContent='No resources'; return; }
-    snap.forEach(d=>{
-      const it=d.data(), id=d.id; const el=document.createElement('div'); el.className='entry';
-      const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
-      el.innerHTML = `<div>${escapeHtml(it.title)} (${escapeHtml(it.resourceType)})</div><div class="small">${escapeHtml(it.description||'')} • ${escapeHtml(it.url||'')}</div><div class="small">status:${escapeHtml(it.status)} • ${time}</div>`;
-      if(it.status==='pending'){
-        const approve=document.createElement('button'); approve.textContent='Approve'; approve.addEventListener('click', ()=> db.collection('resources').doc(id).update({status:'approved'}));
-        const reject=document.createElement('button'); reject.textContent='Reject'; reject.addEventListener('click', ()=> db.collection('resources').doc(id).update({status:'rejected'}));
-        el.appendChild(approve); el.appendChild(reject);
-      } else {
-        const post=document.createElement('button'); post.textContent='Unpublish'; post.addEventListener('click', ()=> db.collection('resources').doc(id).update({status:'archived'}));
-        el.appendChild(post);
+    /* -------- Master lists load/render -------- */
+    async function loadMasterLists(){
+      try{
+        const doc = await db.collection('config').doc('master').get();
+        if(doc.exists){
+          masterLists = Object.assign(masterLists, doc.data());
+          ['causes','actions','types','resourceTypes'].forEach(k=>{ masterLists[k]=Array.isArray(masterLists[k])?sortAlpha(masterLists[k]):[]; });
+        } else {
+          // defaults and attempt to set if current user is admin (or will be set manually)
+          masterLists.causes = ['Climate change','Education','Gender equality','LGBTQ+ rights','Mental health','Physical health','Racial equality','Disabilities','Global conflict'];
+          masterLists.actions = ['Act of kindness','Attended event','Donated','Engaged with media','Ethical purchase','Signing petition','Spread awareness','Volunteered','Voted','Self-care','Challenged behaviour'];
+          masterLists.types = ['environment','charity','community','kindness','other'];
+          masterLists.resourceTypes = ['petition','fundraiser','volunteering','job','website','media','community','article','other'];
+          // try to create; may fail if not admin — that's ok
+          await db.collection('config').doc('master').set(masterLists, {merge:true}).catch(()=>{});
+        }
+      }catch(e){
+        console.error('loadMasterLists error', e);
+        const panel = document.getElementById('approved-list') || document.body;
+        const msg = document.createElement('div'); msg.className='danger small'; msg.textContent = 'Could not load master lists — check Firestore rules or ensure config/master exists.';
+        panel.prepend(msg);
       }
-      adminResourcesEl.appendChild(el);
+      renderMasterListsUI();
+    }
+
+    function renderMasterListsUI(){
+      entryCausesPanel.innerHTML=''; resourceCausesPanel.innerHTML=''; filterCausesPanel.innerHTML='';
+      entryActionsPanel.innerHTML=''; resourceActionsPanel.innerHTML=''; filterActionsPanel.innerHTML='';
+      entryTypeSelect.innerHTML=''; filterType.innerHTML='<option value="">(all)</option>'; resourceTypeSelect.innerHTML='<option value="">(choose)</option>';
+
+      (masterLists.types||[]).forEach(t=>{
+        const o=document.createElement('option'); o.value=t; o.textContent=t; entryTypeSelect.appendChild(o);
+        const fo=document.createElement('option'); fo.value=t; fo.textContent=t; filterType.appendChild(fo);
+        const ro=document.createElement('option'); ro.value=t; ro.textContent=t; resourceTypeSelect.appendChild(ro);
+      });
+
+      (masterLists.causes||[]).forEach(c=>{
+        const ch = document.createElement('label'); ch.style.marginRight='8px'; ch.className='chip'; ch.innerHTML = `<input type="checkbox" value="${escapeHtml(c)}" /> ${escapeHtml(c)}`; entryCausesPanel.appendChild(ch);
+        const rch = ch.cloneNode(true); rch.querySelector('input').checked=false; resourceCausesPanel.appendChild(rch);
+        const fp = document.createElement('div'); fp.style.marginBottom='6px'; fp.innerHTML = `<label><input type="checkbox" value="${escapeHtml(c)}"/> ${escapeHtml(c)}</label>`; filterCausesPanel.appendChild(fp);
+      });
+
+      (masterLists.actions||[]).forEach(a=>{
+        const ch = document.createElement('label'); ch.style.marginRight='8px'; ch.className='chip'; ch.innerHTML = `<input type="checkbox" value="${escapeHtml(a)}" /> ${escapeHtml(a)}`; entryActionsPanel.appendChild(ch);
+        const rch = ch.cloneNode(true); rch.querySelector('input').checked=false; resourceActionsPanel.appendChild(rch);
+        const fp = document.createElement('div'); fp.style.marginBottom='6px'; fp.innerHTML = `<label><input type="checkbox" value="${escapeHtml(a)}"/> ${escapeHtml(a)}</label>`; filterActionsPanel.appendChild(fp);
+      });
+
+      if(adminCausesTA) adminCausesTA.value = (masterLists.causes||[]).join(', ');
+      if(adminActionsTA) adminActionsTA.value = (masterLists.actions||[]).join(', ');
+      if(adminTypesTA) adminTypesTA.value = (masterLists.types||[]).join(', ');
+      if(adminResourceTypesTA) adminResourceTypesTA.value = (masterLists.resourceTypes||[]).join(', ');
+    }
+
+    btnSaveMaster?.addEventListener('click', async ()=>{
+      if(!currentUser) return alert('Sign in as admin');
+      try{
+        masterSaveStatus.textContent='Saving...';
+        const payload = {
+          causes: adminCausesTA.value.split(',').map(s=>s.trim()).filter(Boolean),
+          actions: adminActionsTA.value.split(',').map(s=>s.trim()).filter(Boolean),
+          types: adminTypesTA.value.split(',').map(s=>s.trim()).filter(Boolean),
+          resourceTypes: adminResourceTypesTA.value.split(',').map(s=>s.trim()).filter(Boolean)
+        };
+        await db.collection('config').doc('master').set(payload, {merge:true});
+        await loadMasterLists();
+        masterSaveStatus.textContent='Saved';
+      }catch(e){ masterSaveStatus.textContent='Error'; console.error(e); }
     });
-  }catch(e){ adminResourcesEl.textContent='Error: '+e.message; console.error(e); }
-}
 
-/* Analytics (basic) */
-async function loadAnalytics(){
-  adminAnalyticsEl.textContent='Loading analytics...';
-  try{
-    const snap = await db.collection('submissions').where('status','==','approved').orderBy('timestamp','desc').limit(2000).get();
-    const items = snap.docs.map(d=>d.data());
-    // counts by cause
-    const causeCounts = {};
-    const actionCounts = {};
-    const continentCounts = {};
-    items.forEach(it=>{
-      (it.causes||[]).forEach(c=> causeCounts[c] = (causeCounts[c]||0)+1);
-      (it.actions||[]).forEach(a=> actionCounts[a] = (actionCounts[a]||0)+1);
-      const cont = it.continent || 'Unknown'; continentCounts[cont] = (continentCounts[cont]||0)+1;
+    async function loadSettings(){
+      try{
+        const sdoc = await db.collection('config').doc('settings').get();
+        if(sdoc.exists) settings = Object.assign(settings, sdoc.data());
+        if(adminToggleVotes) adminToggleVotes.checked = !!settings.enableVotes;
+        if(adminToggleBookmarks) adminToggleBookmarks.checked = !!settings.enableBookmarks;
+      }catch(e){ console.error('loadSettings',e); }
+    }
+
+    adminToggleVotes?.addEventListener('change', async ()=> {
+      try{ settings.enableVotes = adminToggleVotes.checked; await db.collection('config').doc('settings').set(settings, {merge:true}); }catch(e){console.error(e);}
     });
-    let html = '<h4>By cause</h4><table class="analytics-table"><tr><th>Cause</th><th>Count</th></tr>';
-    Object.entries(causeCounts).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=> html+=`<tr><td>${escapeHtml(k)}</td><td>${v}</td></tr>`);
-    html += '</table><h4>By action</h4><table class="analytics-table"><tr><th>Action</th><th>Count</th></tr>';
-    Object.entries(actionCounts).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=> html+=`<tr><td>${escapeHtml(k)}</td><td>${v}</td></tr>`);
-    html += '</table><h4>By continent</h4><table class="analytics-table"><tr><th>Continent</th><th>Count</th></tr>';
-    Object.entries(continentCounts).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=> html+=`<tr><td>${escapeHtml(k)}</td><td>${v}</td></tr>`);
-    html += '</table>';
-    adminAnalyticsEl.innerHTML = html;
-  }catch(e){ adminAnalyticsEl.textContent='Error: '+e.message; console.error(e); }
-}
-
-/* admin tab wiring */
-adminTabPending.addEventListener('click', ()=>{ showAdminSubpanel('pending'); loadPendingForAdmin(); });
-adminTabRejected.addEventListener('click', ()=>{ showAdminSubpanel('rejected'); loadAdminRejected(); });
-adminTabAppeals.addEventListener('click', ()=>{ showAdminSubpanel('appeals'); loadAdminAppeals(); });
-adminTabResources.addEventListener('click', ()=>{ showAdminSubpanel('resources'); loadAdminResources(); });
-adminTabAnalytics.addEventListener('click', ()=>{ showAdminSubpanel('analytics'); loadAnalytics(); });
-
-function showAdminSubpanel(n){
-  adminPendingEl.style.display = (n==='pending') ? 'block' : 'none';
-  adminRejectedEl.style.display = (n==='rejected') ? 'block' : 'none';
-  adminAppealsEl.style.display = (n==='appeals') ? 'block' : 'none';
-  adminResourcesEl.style.display = (n==='resources') ? 'block' : 'none';
-  adminAnalyticsEl.style.display = (n==='analytics') ? 'block' : 'none';
-}
-
-/* ======================
-   Suggestions
-   ====================== */
-btnSuggest.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Sign in to suggest');
-  const txt = (suggestText.value||'').trim();
-  if(!txt) return alert('Write suggestion');
-  try{ btnSuggest.disabled=true; suggestStatus.textContent='Sending...'; await db.collection('suggestions').add({ uid: currentUser.uid, text: txt, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); suggestStatus.textContent='Sent'; suggestText.value=''; }catch(e){ suggestStatus.textContent='Error'; console.error(e);} finally{ btnSuggest.disabled=false; }
-});
-
-/* ======================
-   Admin: update settings/master after load
-   ====================== */
-async function initAdminState(){
-  await loadSettings();
-  if(adminToggleVotes) adminToggleVotes.checked = !!settings.enableVotes;
-  if(adminToggleBookmarks) adminToggleBookmarks.checked = !!settings.enableBookmarks;
-}
-
-/* ======================
-   Load resources list
-   ====================== */
-async function loadApprovedResources(){
-  const el = document.getElementById('resources-list');
-  el.textContent='Loading...';
-  try{
-    const snap = await db.collection('resources').where('status','==','approved').orderBy('timestamp','desc').get();
-    el.innerHTML=''; if(!snap.size){ el.textContent='No resources'; return; }
-    snap.forEach(d=>{
-      const it = d.data(); const node = document.createElement('div'); node.className='entry';
-      node.innerHTML = `<div><a href="${escapeHtml(it.url||'#')}" target="_blank">${escapeHtml(it.title)}</a> <span class="tag">${escapeHtml(it.resourceType)}</span></div><div class="small">${escapeHtml(it.description||'')}</div>`;
-      el.appendChild(node);
+    adminToggleBookmarks?.addEventListener('change', async ()=> {
+      try{ settings.enableBookmarks = adminToggleBookmarks.checked; await db.collection('config').doc('settings').set(settings, {merge:true}); }catch(e){console.error(e);}
     });
-  }catch(e){ el.textContent='Error: '+e.message; console.error(e); }
-}
 
-/* ======================
-   Routing & navigation
-   ====================== */
-navDashboard.addEventListener('click', ()=> location.hash = '#dashboard');
-navProfile.addEventListener('click', ()=> location.hash = '#profile');
-navMy.addEventListener('click', ()=> location.hash = '#my-submissions');
-navResources.addEventListener('click', ()=> location.hash = '#resources');
-navAdmin?.addEventListener('click', ()=> location.hash = '#admin');
+    /* -------- Auth -------- */
+    btnSignup.addEventListener('click', async ()=> {
+      try{
+        const uc = await auth.createUserWithEmailAndPassword(emailEl.value.trim(), pwEl.value);
+        console.log('signed up uid', uc.user.uid);
+        alert('Signed up. Create admins/{UID} in Firestore if you need admin access.');
+      }catch(e){ alert('Signup error: '+e.message); }
+    });
+    btnLogin.addEventListener('click', async ()=> {
+      try{ await auth.signInWithEmailAndPassword(emailEl.value.trim(), pwEl.value); }catch(e){ alert('Login error: '+e.message); }
+    });
+    btnLogout.addEventListener('click', async ()=> { try{ await auth.signOut(); }catch(e){console.error(e);} });
 
-window.addEventListener('hashchange', route);
-function route(){
-  const hash = location.hash || '#dashboard';
-  // hide all main sections first
-  ['dashboard-section','profile-section','my-submissions-section','resources-section','admin-section','submit-section'].forEach(id=>{
-    const e = document.getElementById(id); if(e) e.style.display = 'none';
-  });
-  // show according to route
-  if(hash==='#dashboard'){ document.getElementById('dashboard-section').style.display='block'; document.getElementById('submit-section').style.display='block'; loadDashboardFeed(); }
-  else if(hash==='#profile'){ document.getElementById('profile-section').style.display='block'; }
-  else if(hash==='#my-submissions'){ document.getElementById('my-submissions-section').style.display='block'; }
-  else if(hash==='#resources'){ document.getElementById('resources-section').style.display='block'; loadApprovedResources(); }
-  else if(hash==='#admin'){ document.getElementById('admin-section').style.display='block'; }
-  else { document.getElementById('dashboard-section').style.display='block'; document.getElementById('submit-section').style.display='block'; }
-}
-route();
+    auth.onAuthStateChanged(async user => {
+      currentUser = user;
+      // cleanup
+      if(mySubmissionsUnsub){ mySubmissionsUnsub(); mySubmissionsUnsub=null; }
+      if(!user){
+        userEmailSpan.textContent='Not signed in';
+        btnLogout.style.display='none';
+        authSection.style.display='block';
+        submitSection.style.display='block';
+        profileSection.style.display='none';
+        mySubmissionsSection.style.display='none';
+        resourcesSection.style.display='none';
+        adminSection.style.display='none';
+        navAdminWrap.style.display='none';
+        profileSummaryHide();
+        return;
+      }
+      userEmailSpan.textContent = user.email;
+      btnLogout.style.display='inline-block';
+      authSection.style.display='none'; // login box disappears
+      submitSection.style.display='block';
+      profileSection.style.display='none';
+      mySubmissionsSection.style.display='none';
+      // ensure user doc exists
+      try{
+        const uref = db.collection('users').doc(user.uid);
+        const ud = await uref.get();
+        if(!ud.exists) await uref.set({ createdAt: firebase.firestore.FieldValue.serverTimestamp(), displayName: user.email.split('@')[0] }, {merge:true});
+      }catch(e){ console.error(e); }
+      await loadUserProfile();
+      attachMySubmissionsListener();
+      await loadProfileSummary();
 
-/* ======================
-   Initialization
-   ====================== */
-(async function init(){
-  await loadMasterLists();
-  await loadSettings();
-  // wire filter dropdown panels to close when clicked outside
-  document.addEventListener('click', (ev)=>{
-    if(!filterCausesPanel.contains(ev.target) && ev.target!==filterCausesBtn) filterCausesPanel.style.display='none';
-    if(!filterActionsPanel.contains(ev.target) && ev.target!==filterActionsBtn) filterActionsPanel.style.display='none';
-  });
-  // wire filter panels change events
-  filterCausesPanel.addEventListener('change', ()=> applyFiltersAndRender());
-  filterActionsPanel.addEventListener('change', ()=> applyFiltersAndRender());
-  // initially populate entry/resource panels (already done by renderMasterListsUI called by loadMasterLists)
-  // load dashboard initially
-  loadDashboardFeed();
-  loadApprovedResources();
-  initAdminState();
-})();
+      // admin check
+      try{
+        const adminDoc = await db.collection('admins').doc(user.uid).get();
+        if(adminDoc.exists && adminDoc.data().enabled === true){
+          adminSection.style.display='block';
+          navAdminWrap.style.display='inline';
+          loadPendingForAdmin();
+        } else {
+          adminSection.style.display='none';
+          navAdminWrap.style.display='none';
+        }
+      }catch(e){ console.error(e); }
+    });
 
-/* ======================
-   Additional notes & suggested server tasks (not implemented here)
-   - Email notifications: implement Cloud Function triggers to send emails via SendGrid (free tier available)
-   - Server-side rate-limiting & hard enforcement of blocking logic: implement Cloud Function onCreate for submissions to reject writes or flag
-   - Aggregate analytics counters: implement Cloud Function onCreate/onUpdate to increment aggregated documents for efficient analytics
-   - For high integrity, move moderation counters & blocking to server-triggered logic instead of admin client updates
-   ====================== */
+    /* -------- Profile load/save & summary -------- */
+    async function loadUserProfile(){
+      if(!currentUser) return;
+      profileSaveStatus.textContent='Loading...';
+      try{
+        const uref = db.collection('users').doc(currentUser.uid);
+        const ud = await uref.get();
+        const data = ud.exists ? ud.data() : {};
+        profileNameEl.value = data.displayName || currentUser.email.split('@')[0];
+        profileBioEl.value = data.bio || '';
+        profileAvatarEl.value = data.avatarUrl || '';
+        profileContinentEl.value = data.continent || '';
+        const rejectedCount = data.rejectedCount || 0;
+        const blocked = !!data.blocked;
+        const tcsRequired = !!data.tcsRequired;
+        const tcsAccepted = !!data.tcsAccepted;
+        if(blocked) {
+          rejectedMessagesEl.innerHTML = 'Your account is blocked from posting due to repeated rejections. You may appeal.';
+        } else if(tcsRequired && !tcsAccepted) {
+          rejectedMessagesEl.innerHTML = `You have ${rejectedCount} rejected submissions. Please accept Terms & Guidance to continue posting.`;
+          tcBox.style.display='block';
+        } else if(rejectedCount>0){
+          rejectedMessagesEl.innerHTML = `You have ${rejectedCount} rejected submissions.`;
+          tcBox.style.display='none';
+        } else {
+          rejectedMessagesEl.innerHTML = '';
+          tcBox.style.display='none';
+        }
+        profileSaveStatus.textContent='';
+      }catch(e){ profileSaveStatus.textContent='Error'; console.error(e); }
+    }
+
+    btnSaveProfile.addEventListener('click', async ()=> {
+      if(!currentUser) return alert('Sign in');
+      profileSaveStatus.textContent='Saving...';
+      try{
+        await db.collection('users').doc(currentUser.uid).set({
+          displayName: profileNameEl.value.trim(),
+          bio: profileBioEl.value.trim(),
+          avatarUrl: profileAvatarEl.value.trim(),
+          continent: profileContinentEl.value || null
+        }, {merge:true});
+        profileSaveStatus.textContent='Saved';
+        loadProfileSummary();
+      }catch(e){ profileSaveStatus.textContent='Error'; console.error(e); }
+    });
+
+    btnAcceptTc?.addEventListener('click', async ()=> {
+      if(!currentUser) return alert('Sign in');
+      await db.collection('users').doc(currentUser.uid).set({ tcsAccepted:true, tcsRequired:false }, {merge:true});
+      tcBox.style.display='none';
+      rejectedMessagesEl.textContent='Terms accepted — you may post.';
+    });
+
+    async function loadProfileSummary(){
+      if(!currentUser) { profileSummaryHide(); return; }
+      try{
+        const u = await db.collection('users').doc(currentUser.uid).get();
+        const data = u.exists ? u.data() : {};
+        summaryName.textContent = data.displayName || currentUser.email.split('@')[0];
+        summaryBio.textContent = data.bio || '';
+        summaryAvatar.src = data.avatarUrl || 'https://via.placeholder.com/120?text=User';
+        summaryAvatar.onerror = ()=> summaryAvatar.src = 'https://via.placeholder.com/120?text=User';
+        const snap = await db.collection('submissions').where('uid','==', currentUser.uid).orderBy('timestamp','desc').get();
+        summaryCount.textContent = snap.size;
+        const last = snap.docs[0];
+        summaryLast.textContent = last ? new Date(last.data().timestamp?.seconds*1000||Date.now()).toLocaleString() : '—';
+      }catch(e){ console.error('loadProfileSummary',e); }
+    }
+    function profileSummaryHide(){ summaryName.textContent=''; summaryBio.textContent=''; summaryAvatar.src='https://via.placeholder.com/120?text=User'; summaryCount.textContent='0'; summaryLast.textContent='—'; }
+
+    openProfileLink?.addEventListener('click', (e)=>{ e.preventDefault?.(); location.hash = '#profile'; });
+
+    /* -------- Utility to read checked values -------- */
+    function getCheckedValuesFromPanel(panel){ return Array.from(panel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value); }
+
+    /* -------- Submit (user) -------- */
+    btnSubmit.addEventListener('click', async ()=> {
+      if(!currentUser) return alert('Sign in to submit');
+      const text = entryText.value.trim();
+      if(!text) return alert('Enter description');
+      if(Date.now() - lastSubmitAt < 30*1000) return alert('Please wait 30s between submissions (client throttle)');
+      const udoc = await db.collection('users').doc(currentUser.uid).get();
+      const udata = udoc.exists ? udoc.data() : {};
+      if(udata.blocked) return alert('Your account is blocked from posting.');
+      if(udata.tcsRequired && !udata.tcsAccepted) return alert('Accept Terms & Guidance in your profile before posting.');
+      const causes = getCheckedValuesFromPanel(entryCausesPanel);
+      const actions = getCheckedValuesFromPanel(entryActionsPanel);
+      const type = entryTypeSelect.value;
+      const payload = {
+        text, tag: type, causes, actions, uid: currentUser.uid, email: currentUser.email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'pending',
+        continent: udata.continent || null
+      };
+      try{
+        btnSubmit.disabled=true; submitStatus.textContent='Submitting...';
+        await db.collection('submissions').add(payload);
+        lastSubmitAt = Date.now();
+        submitStatus.textContent='Submitted (pending approval)';
+        entryText.value=''; entryCausesPanel.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
+        entryActionsPanel.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
+        await db.collection('users').doc(currentUser.uid).set({ lastSubmission: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
+      }catch(e){ submitStatus.textContent='Error: '+e.message; console.error(e);} finally{ btnSubmit.disabled=false; }
+    });
+
+    /* -------- Resources submission -------- */
+    showResourceFormBtn?.addEventListener('click', ()=> {
+      if(!currentUser) { alert('Sign in to suggest resources'); return; }
+      resourceFormDiv.style.display = resourceFormDiv.style.display === 'none' ? 'block' : 'none';
+    });
+    async function showAdminResourceFormForAdmins(){
+      if(!currentUser) return;
+      try{
+        const d = await db.collection('admins').doc(currentUser.uid).get();
+        if(d.exists && d.data().enabled){
+          const adminAddBtn = document.createElement('button'); adminAddBtn.textContent='Post resource (admin)'; adminAddBtn.className='small-btn';
+          adminAddBtn.addEventListener('click', ()=> { resourceFormDiv.style.display='block'; });
+          adminResourcesEl?.parentNode?.insertBefore(adminAddBtn, adminResourcesEl);
+        }
+      }catch(e){ console.error(e); }
+    }
+
+    btnSubmitResource.addEventListener('click', async ()=> {
+      if(!currentUser) return alert('Sign in');
+      const title = (resourceTitle.value||'').trim();
+      const url = (resourceUrl.value||'').trim();
+      const desc = (resourceDesc.value||'').trim();
+      const rtype = resourceTypeSelect.value;
+      const causes = getCheckedValuesFromPanel(resourceCausesPanel);
+      const actions = getCheckedValuesFromPanel(resourceActionsPanel);
+      if(!title) return alert('Enter title');
+      let isAdmin=false;
+      try{ const a = await db.collection('admins').doc(currentUser.uid).get(); if(a.exists && a.data().enabled) isAdmin=true; }catch(e){}
+      const doc = { title, url, description: desc, resourceType: rtype, causes, actions, submittedBy: currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp(), status: isAdmin ? 'approved' : 'pending' };
+      try{
+        btnSubmitResource.disabled=true; resourceStatus.textContent='Submitting...';
+        await db.collection('resources').add(doc);
+        resourceStatus.textContent = isAdmin ? 'Posted' : 'Submitted (pending approval)';
+        resourceTitle.value=''; resourceUrl.value=''; resourceDesc.value=''; resourceCausesPanel.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
+      }catch(e){ resourceStatus.textContent='Error: '+e.message; console.error(e);} finally{ btnSubmitResource.disabled=false; }
+    });
+
+    async function loadApprovedResources(){
+      const el = document.getElementById('resources-list');
+      el.textContent='Loading...';
+      try{
+        const snap = await db.collection('resources').where('status','==','approved').orderBy('timestamp','desc').get();
+        el.innerHTML=''; if(!snap.size){ el.textContent='No resources'; return; }
+        snap.forEach(d=>{
+          const it = d.data(); const node = document.createElement('div'); node.className='entry';
+          node.innerHTML = `<div><a href="${escapeHtml(it.url||'#')}" target="_blank">${escapeHtml(it.title)}</a> <span class="tag">${escapeHtml(it.resourceType)}</span></div><div class="small">${escapeHtml(it.description||'')}</div>`;
+          el.appendChild(node);
+        });
+      }catch(e){ el.textContent='Error: '+e.message; console.error(e); }
+    }
+
+    /* -------- Bookmarks & votes (MVP, server-side integrity advised) -------- */
+    async function toggleBookmark(itemId, itemType){ if(!currentUser) return alert('Sign in to bookmark'); if(!settings.enableBookmarks) return alert('Bookmarks disabled'); const bdocRef = db.collection('bookmarks').doc(currentUser.uid).collection('items').doc(itemId); const snap = await bdocRef.get(); if(snap.exists) await bdocRef.delete(); else await bdocRef.set({ type: itemType, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+    async function toggleVote(itemId, collectionName='submissions'){ if(!currentUser) return alert('Sign in to vote'); if(!settings.enableVotes) return alert('Voting disabled'); const voteRef = db.collection(collectionName).doc(itemId).collection('votes').doc(currentUser.uid); const itemRef = db.collection(collectionName).doc(itemId); await db.runTransaction(async tx=>{ const vdoc = await tx.get(voteRef); const itemDoc = await tx.get(itemRef); const curCount = itemDoc.exists && itemDoc.data().voteCount ? itemDoc.data().voteCount : 0; if(vdoc.exists){ tx.delete(voteRef); tx.update(itemRef, { voteCount: Math.max(0, curCount-1) }); } else { tx.set(voteRef, { uid: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); tx.update(itemRef, { voteCount: (curCount || 0) + 1 }); } }); }
+
+    /* -------- Dashboard: load & filter -------- */
+    async function loadDashboardFeed(){
+      approvedListEl.textContent='Loading...';
+      try{
+        const snap = await db.collection('submissions').where('status','==','approved').orderBy('timestamp','desc').limit(1000).get();
+        cachedApproved = snap.docs.map(d=>({ id:d.id, ...d.data()}));
+        applyFiltersAndRender();
+      }catch(e){ approvedListEl.textContent='Error: '+e.message; console.error(e); }
+    }
+    function applyFiltersAndRender(){
+      const ftype = filterType.value || '';
+      const fcauses = Array.from(filterCausesPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
+      const factions = Array.from(filterActionsPanel.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
+      const fcont = filterContinent.value || '';
+      let items = cachedApproved.slice();
+      if(ftype) items = items.filter(it => it.tag === ftype);
+      if(fcauses.length) items = items.filter(it => (it.causes||[]).some(c=>fcauses.includes(c)));
+      if(factions.length) items = items.filter(it => (it.actions||[]).some(a=>factions.includes(a)));
+      if(fcont) items = items.filter(it => (it.continent || '') === fcont);
+      renderApproved(items);
+    }
+    dashboardRefresh.addEventListener('click', loadDashboardFeed);
+    filterCausesBtn.addEventListener('click', ()=> filterCausesPanel.style.display = filterCausesPanel.style.display === 'block' ? 'none' : 'block');
+    filterActionsBtn.addEventListener('click', ()=> filterActionsPanel.style.display = filterActionsPanel.style.display === 'block' ? 'none' : 'block');
+    filterCausesPanel.addEventListener('change', applyFiltersAndRender);
+    filterActionsPanel.addEventListener('change', applyFiltersAndRender);
+    filterType.addEventListener('change', applyFiltersAndRender);
+    filterContinent.addEventListener('change', applyFiltersAndRender);
+
+    function renderApproved(items){
+      totalCountEl.textContent = items.length;
+      const counts = {};
+      items.forEach(it => counts[it.tag] = (counts[it.tag]||0) + 1);
+      tagCountsEl.innerHTML='';
+      for(const [k,v] of Object.entries(counts)){ const el = document.createElement('div'); el.className='count-card'; el.textContent=`${k}: ${v}`; tagCountsEl.appendChild(el); }
+      approvedListEl.innerHTML='';
+      if(!items.length){ approvedListEl.textContent='No approved entries'; return; }
+      items.forEach(it=>{
+        const d = document.createElement('div'); d.className='entry';
+        const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+        const causesText = (it.causes||[]).join(', ') || '—';
+        const actionsText = (it.actions||[]).join(', ') || '—';
+        const voteCount = it.voteCount || 0;
+        d.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+          <div class="small">Causes: ${escapeHtml(causesText)} • Actions: ${escapeHtml(actionsText)} • Continent: ${escapeHtml(it.continent||'—')}</div>
+          <div class="small">by ${escapeHtml(it.email)} • ${time}</div>
+          <div style="margin-top:6px" class="flex small">
+            ${settings.enableVotes ? `<button class="vote-btn small-btn" data-id="${it.id}">▲ Vote (${voteCount})</button>` : ''}
+            ${settings.enableBookmarks ? `<button class="bookmark-btn small-btn" data-id="${it.id}">★ Bookmark</button>` : ''}
+            <button class="view-my-btn small-btn" data-id="${it.id}">View in My submissions</button>
+          </div>`;
+        approvedListEl.appendChild(d);
+      });
+      approvedListEl.querySelectorAll('.vote-btn').forEach(btn=> btn.addEventListener('click', async ()=>{ await toggleVote(btn.getAttribute('data-id'),'submissions'); loadDashboardFeed(); }));
+      approvedListEl.querySelectorAll('.bookmark-btn').forEach(btn=> btn.addEventListener('click', async ()=>{ await toggleBookmark(btn.getAttribute('data-id'),'submission'); btn.textContent='★ Bookmarked'; }));
+      approvedListEl.querySelectorAll('.view-my-btn').forEach(btn=> btn.addEventListener('click', ()=>{ location.hash = '#my-submissions'; highlightMyItem(btn.getAttribute('data-id')); }));
+    }
+
+    function highlightMyItem(id){
+      location.hash = '#my-submissions';
+      setTimeout(()=> {
+        const el = document.querySelector(`#my-submissions-full [data-item="${id}"]`);
+        if(el){ el.style.outline='3px solid #ffeb3b'; el.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>el.style.outline='',4000); }
+      }, 600);
+    }
+
+    /* -------- My submissions (user) -------- */
+    function attachMySubmissionsListener(){
+      if(!currentUser) return;
+      mySubmissionsUnsub = db.collection('submissions').where('uid','==', currentUser.uid).orderBy('timestamp','desc').onSnapshot(snapshot=>{
+        const items = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
+        renderProfileSubmissions(items);
+        renderMySubmissionsFull(items);
+      }, err=>{ console.error('my subs onSnapshot',err); profileSubmissionsList.textContent='Error loading your submissions'; mySubmissionsFull.textContent='Error loading your submissions'; });
+    }
+
+    function renderProfileSubmissions(items){
+      profileSubmissionsList.innerHTML = '';
+      if(!items.length){ profileSubmissionsList.textContent='You have no submissions yet.'; return; }
+      items.forEach(it=>{
+        const el = document.createElement('div'); el.className='entry';
+        const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+        el.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div><div class="small">status: ${escapeHtml(it.status)} • ${time}</div>`;
+        el.addEventListener('click', ()=>{ location.hash = '#my-submissions'; highlightMyItem(it.id); });
+        profileSubmissionsList.appendChild(el);
+      });
+    }
+
+    function renderMySubmissionsFull(items){
+      mySubmissionsFull.innerHTML = '';
+      if(!items.length){ mySubmissionsFull.textContent='No submissions'; return; }
+      items.forEach(it=>{
+        const el = document.createElement('div'); el.className='entry'; el.setAttribute('data-item', it.id);
+        const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+        el.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+          <div class="small">Causes: ${escapeHtml((it.causes||[]).join(', ')||'—')} • Actions: ${escapeHtml((it.actions||[]).join(', ')||'—')}</div>
+          <div class="small">status: ${escapeHtml(it.status)} • ${time}</div>`;
+        const controls = document.createElement('div'); controls.className='flex'; controls.style.marginTop='6px';
+        if(it.status==='pending'){ const ebtn=document.createElement('button'); ebtn.textContent='Edit'; ebtn.addEventListener('click', ()=> editSubmission(it.id,it)); controls.appendChild(ebtn);
+          const dbtn = document.createElement('button'); dbtn.textContent='Delete'; dbtn.addEventListener('click', ()=> deleteSubmission(it.id)); controls.appendChild(dbtn); }
+        if(it.status==='rejected'){ const abtn=document.createElement('button'); abtn.textContent='Appeal'; abtn.addEventListener('click', ()=> openAppealDialog(it.id)); controls.appendChild(abtn); }
+        el.appendChild(controls);
+        mySubmissionsFull.appendChild(el);
+      });
+    }
+
+    async function editSubmission(docId, data){
+      const txt = prompt('Edit your submission', data.text);
+      if(txt==null) return;
+      try{ await db.collection('submissions').doc(docId).update({ text: txt }); }catch(e){ alert('Update failed: '+e.message); }
+    }
+    async function deleteSubmission(docId){
+      if(!confirm('Delete?')) return;
+      try{ await db.collection('submissions').doc(docId).delete(); }catch(e){ alert('Delete failed: '+e.message); }
+    }
+
+    /* -------- Appeals (single open appeal per user/submission) -------- */
+    async function openAppealDialog(subId){
+      if(!currentUser) return alert('Sign in');
+      const appealsCol = db.collection('submissions').doc(subId).collection('appeals');
+      try{
+        const existing = await appealsCol.where('uid','==', currentUser.uid).where('status','==','open').limit(1).get();
+        if(!existing.empty){
+          const doc = existing.docs[0];
+          const cur = doc.data();
+          const edited = prompt('You already have an open appeal. Edit your appeal text:', cur.message || '');
+          if(edited === null) return;
+          await doc.ref.update({ message: edited, editedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          alert('Appeal updated.');
+          return;
+        }
+        const msg = prompt('Write a short appeal message:');
+        if(!msg) return;
+        await appealsCol.add({ uid: currentUser.uid, message: msg, status: 'open', timestamp: firebase.firestore.FieldValue.serverTimestamp(), editedAt: null });
+        alert('Appeal submitted. You can edit it while it remains open.');
+      }catch(e){ console.error('openAppealDialog error', e); alert('Could not submit appeal: ' + (e.message || e)); }
+    }
+
+    /* -------- Admin functions: pending/rejected/appeals/resources/analytics/logs -------- */
+    async function loadPendingForAdmin(){
+      adminPendingEl.textContent='Loading...';
+      try{
+        const snap = await db.collection('submissions').where('status','==','pending').orderBy('timestamp','asc').get();
+        adminPendingEl.innerHTML=''; if(!snap.size){ adminPendingEl.textContent='No pending submissions'; return; }
+        snap.forEach(d=>{
+          const it = d.data(); const id=d.id;
+          const el = document.createElement('div'); el.className='entry';
+          const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString(): '—';
+          el.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+            <div class="small">Causes: ${escapeHtml((it.causes||[]).join(', '))} • Actions: ${escapeHtml((it.actions||[]).join(', '))}</div>
+            <div class="small">from ${escapeHtml(it.email)} • ${time}</div>
+            <div class="small">User ID: ${escapeHtml(it.uid)}</div>`;
+          const approve = document.createElement('button'); approve.textContent='Approve'; approve.addEventListener('click', ()=> adminChangeStatus(id,'approved'));
+          const reject = document.createElement('button'); reject.textContent='Reject'; reject.addEventListener('click', ()=> adminRejectWithReason(id));
+          const markBtn = document.createElement('button'); markBtn.textContent='Mark for later'; markBtn.addEventListener('click', ()=> adminMarkForLater(id));
+          el.appendChild(approve); el.appendChild(reject); el.appendChild(markBtn);
+          adminPendingEl.appendChild(el);
+        });
+      }catch(e){ adminPendingEl.textContent='Error: '+e.message; console.error(e); }
+    }
+
+    async function adminChangeStatus(docId, newStatus){
+      try{
+        const docRef = db.collection('submissions').doc(docId);
+        const snap = await docRef.get();
+        if(!snap.exists) return alert('Missing');
+        await docRef.update({ status: newStatus });
+        if(newStatus==='rejected'){
+          const uid = snap.data().uid;
+          const userRef = db.collection('users').doc(uid);
+          await db.runTransaction(async tx=>{
+            const u = await tx.get(userRef); const udata = u.exists?u.data():{};
+            const rc = (udata.rejectedCount||0)+1; const history = udata.rejectedHistory||[]; history.push({ submissionId: docId, time: firebase.firestore.FieldValue.serverTimestamp() });
+            const updates = { rejectedCount: rc, rejectedHistory: history };
+            if(rc>=3) updates.tcsRequired=true;
+            if(rc>=5) updates.blocked=true;
+            tx.set(userRef, updates, {merge:true});
+          });
+        }
+        loadPendingForAdmin(); loadAdminRejected();
+      }catch(e){ alert('Admin update failed: '+e.message); console.error(e); }
+    }
+
+    async function adminRejectWithReason(docId){
+      const reason = prompt('Enter rejection reason (short):') || 'No reason';
+      try{
+        const docRef = db.collection('submissions').doc(docId);
+        await docRef.update({ status:'rejected', rejectionReason: reason });
+        const snap = await docRef.get();
+        const uid = snap.data().uid;
+        await db.runTransaction(async tx=>{
+          const userRef = db.collection('users').doc(uid);
+          const u = await tx.get(userRef); const udata = u.exists?u.data():{};
+          const rc=(udata.rejectedCount||0)+1; const history=udata.rejectedHistory||[]; history.push({ submissionId: docId, time: firebase.firestore.FieldValue.serverTimestamp(), reason });
+          const updates={ rejectedCount: rc, rejectedHistory: history };
+          if(rc>=3) updates.tcsRequired=true;
+          if(rc>=5) updates.blocked=true;
+          tx.set(userRef, updates, {merge:true});
+        });
+        loadPendingForAdmin(); loadAdminRejected();
+      }catch(e){ alert('Reject failed: '+e.message); console.error(e); }
+    }
+
+    async function loadAdminRejected(){
+      adminRejectedEl.textContent='Loading...';
+      try{
+        const snap = await db.collection('submissions').where('status','==','rejected').orderBy('timestamp','desc').get();
+        adminRejectedEl.innerHTML=''; if(!snap.size){ adminRejectedEl.textContent='No rejected submissions'; return; }
+        snap.forEach(d=>{
+          const it=d.data(), id=d.id; const el=document.createElement('div'); el.className='entry';
+          const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+          el.innerHTML = `<div>${escapeHtml(it.text)} <span class="tag">${escapeHtml(it.tag)}</span></div>
+            <div class="small">from ${escapeHtml(it.email)} • ${time}</div>
+            <div class="small">User ID: ${escapeHtml(it.uid)} • Reason: ${escapeHtml(it.rejectionReason||'—')}</div>`;
+          adminRejectedEl.appendChild(el);
+        });
+      }catch(e){ adminRejectedEl.textContent='Error: '+e.message; console.error(e); }
+    }
+
+    async function loadAdminAppeals(){
+      adminAppealsEl.textContent='Loading...';
+      try{
+        adminAppealsEl.innerHTML='';
+        const subs = await db.collection('submissions').orderBy('timestamp','desc').limit(500).get();
+        for(const s of subs.docs){
+          const appeals = await s.ref.collection('appeals').where('status','==','open').get();
+          appeals.forEach(a=>{
+            const ad=a.data(), aid=a.id;
+            const el=document.createElement('div'); el.className='entry';
+            el.innerHTML = `<div><strong>Appeal</strong> for ${s.id} (submission by ${escapeHtml(s.data().email)})</div>
+              <div class="small">${escapeHtml(ad.message)}</div>
+              <div class="small">from user: ${escapeHtml(ad.uid)} • ${new Date(ad.timestamp?.seconds*1000||Date.now()).toLocaleString()}</div>`;
+            const actions = document.createElement('div'); actions.className='flex'; actions.style.marginTop='6px';
+            ['approve_unblock','approve_unblock_warn','reject_unblock','reject_block','mark_resolved_nochange'].forEach(action=>{
+              const b=document.createElement('button'); b.textContent=action.replace(/_/g,' '); b.className='small-btn';
+              b.addEventListener('click', ()=> resolveAppeal(s.id, aid, action));
+              actions.appendChild(b);
+            });
+            el.appendChild(actions); adminAppealsEl.appendChild(el);
+          });
+        }
+      }catch(e){ adminAppealsEl.textContent='Error: '+e.message; console.error(e); }
+    }
+
+    async function resolveAppeal(subId, appealId, action){
+      try{
+        const resolveFn = firebase.functions().httpsCallable('resolveAppeal');
+        await resolveFn({ submissionId: subId, appealId, action, note: 'resolved via admin UI' });
+        alert('Appeal resolved: '+action);
+        loadAdminAppeals();
+      }catch(e){ alert('Resolve failed: '+(e.message||e)); console.error(e); }
+    }
+
+    async function loadAdminResources(){
+      adminResourcesEl.textContent='Loading...';
+      try{
+        const snap = await db.collection('resources').orderBy('timestamp','desc').limit(500).get();
+        adminResourcesEl.innerHTML=''; if(!snap.size){ adminResourcesEl.textContent='No resources'; return; }
+        snap.forEach(d=>{
+          const it=d.data(), id=d.id; const el=document.createElement('div'); el.className='entry';
+          const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+          el.innerHTML = `<div>${escapeHtml(it.title)} (${escapeHtml(it.resourceType)})</div><div class="small">${escapeHtml(it.description||'')} • ${escapeHtml(it.url||'')}</div><div class="small">status:${escapeHtml(it.status)} • ${time}</div>`;
+          if(it.status==='pending'){
+            const approve=document.createElement('button'); approve.textContent='Approve'; approve.addEventListener('click', ()=> db.collection('resources').doc(id).update({status:'approved'}).then(loadAdminResources));
+            const reject=document.createElement('button'); reject.textContent='Reject'; reject.addEventListener('click', ()=> db.collection('resources').doc(id).update({status:'rejected'}).then(loadAdminResources));
+            el.appendChild(approve); el.appendChild(reject);
+          } else {
+            const post=document.createElement('button'); post.textContent='Unpublish'; post.addEventListener('click', ()=> db.collection('resources').doc(id).update({status:'archived'}).then(loadAdminResources));
+            el.appendChild(post);
+          }
+          adminResourcesEl.appendChild(el);
+        });
+      }catch(e){ adminResourcesEl.textContent='Error: '+e.message; console.error(e); }
+    }
+
+    async function loadAnalytics(){
+      adminAnalyticsEl.textContent='Loading analytics...';
+      try{
+        const snap = await db.collection('submissions').where('status','==','approved').orderBy('timestamp','desc').limit(2000).get();
+        const items = snap.docs.map(d=>d.data());
+        const causeCounts={}, actionCounts={}, continentCounts={};
+        items.forEach(it=>{
+          (it.causes||[]).forEach(c=> causeCounts[c] = (causeCounts[c]||0)+1);
+          (it.actions||[]).forEach(a=> actionCounts[a] = (actionCounts[a]||0)+1);
+          const cont = it.continent || 'Unknown'; continentCounts[cont] = (continentCounts[cont]||0)+1;
+        });
+        let html = '<h4>By cause</h4><table class="analytics-table"><tr><th>Cause</th><th>Count</th></tr>';
+        Object.entries(causeCounts).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=> html+=`<tr><td>${escapeHtml(k)}</td><td>${v}</td></tr>`);
+        html += '</table><h4>By action</h4><table class="analytics-table"><tr><th>Action</th><th>Count</th></tr>';
+        Object.entries(actionCounts).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=> html+=`<tr><td>${escapeHtml(k)}</td><td>${v}</td></tr>`);
+        html += '</table><h4>By continent</h4><table class="analytics-table"><tr><th>Continent</th><th>Count</th></tr>';
+        Object.entries(continentCounts).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=> html+=`<tr><td>${escapeHtml(k)}</td><td>${v}</td></tr>`);
+        html += '</table>';
+        adminAnalyticsEl.innerHTML = html;
+      }catch(e){ adminAnalyticsEl.textContent='Error: '+e.message; console.error(e); }
+    }
+
+    async function adminMarkForLater(docId, reason='mark_for_later'){
+      if(!confirm('Mark this item for later review?')) return;
+      try{
+        await db.collection('submissions').doc(docId).set({ reviewLater: true, reviewReason: reason, reviewMarkerBy: currentUser.uid, reviewMarkedAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
+        alert('Marked for later.');
+        loadPendingForAdmin();
+      }catch(e){ alert('Mark failed: '+e.message); console.error(e); }
+    }
+
+    async function loadAdminLogs(){
+      adminRejectedEl.innerHTML = 'Loading logs...';
+      try{
+        const snap = await db.collection('submissions').orderBy('timestamp','desc').limit(500).get();
+        adminRejectedEl.innerHTML = '';
+        for(const d of snap.docs){
+          const it = d.data(); const time = it.timestamp ? new Date(it.timestamp.seconds*1000).toLocaleString() : '—';
+          const logDiv = document.createElement('div'); logDiv.className='entry';
+          logDiv.innerHTML = `<div><strong>${escapeHtml(it.text)}</strong> <span class="small">(${escapeHtml(it.tag)})</span></div><div class="small">status:${escapeHtml(it.status)} • ${time} • user:${escapeHtml(it.uid)}</div>`;
+          if(it.moderationLog && Array.isArray(it.moderationLog)){
+            const ml = document.createElement('div'); ml.className='small'; ml.style.marginTop='6px'; ml.innerHTML = '<em>Moderation history:</em>';
+            it.moderationLog.forEach(entry => { const by = escapeHtml(entry.by||'unknown'); const from = escapeHtml(entry.from||''); const to = escapeHtml(entry.to||''); const note = escapeHtml(entry.note||''); const when = entry.when ? new Date(entry.when.seconds*1000).toLocaleString() : '—'; ml.innerHTML += `<div class="small">[${when}] ${by}: ${from} → ${to} ${note ? ' — ' + note : ''}</div>`; });
+            logDiv.appendChild(ml);
+          }
+          const appealsSnap = await d.ref.collection('appeals').orderBy('timestamp','asc').get();
+          if(!appealsSnap.empty){
+            const appDiv = document.createElement('div'); appDiv.className='small'; appDiv.style.marginTop='6px'; appDiv.innerHTML = '<em>Appeals:</em>';
+            appealsSnap.forEach(a => { const ad = a.data(); const when = ad.timestamp ? new Date(ad.timestamp.seconds*1000).toLocaleString() : '—'; appDiv.innerHTML += `<div class="small">[${when}] ${escapeHtml(ad.uid)} • ${escapeHtml(ad.message)} • status:${escapeHtml(ad.status||'—')} ${ad.resolution ? ' • resolution:' + escapeHtml(ad.resolution) : ''}</div>`; });
+            logDiv.appendChild(appDiv);
+          }
+          adminRejectedEl.appendChild(logDiv);
+        }
+      }catch(e){ adminRejectedEl.textContent='Error loading logs: '+e.message; console.error(e); }
+    }
+
+    // admin tab wiring
+    adminTabPending.addEventListener('click', ()=>{ showAdminSubpanel('pending'); loadPendingForAdmin(); });
+    adminTabRejected.addEventListener('click', ()=>{ showAdminSubpanel('rejected'); loadAdminRejected(); });
+    adminTabAppeals.addEventListener('click', ()=>{ showAdminSubpanel('appeals'); loadAdminAppeals(); });
+    adminTabResources.addEventListener('click', ()=>{ showAdminSubpanel('resources'); loadAdminResources(); });
+    adminTabAnalytics.addEventListener('click', ()=>{ showAdminSubpanel('analytics'); loadAnalytics(); });
+    document.getElementById('admin-tab-config')?.addEventListener('click', ()=> showAdminSubpanel('configuration'));
+    document.getElementById('admin-tab-logs')?.addEventListener('click', ()=> showAdminSubpanel('logs'));
+
+    function showAdminSubpanel(name){
+      const panels = { pending: adminPendingEl, rejected: adminRejectedEl, appeals: adminAppealsEl, resources: adminResourcesEl, analytics: adminAnalyticsEl };
+      Object.values(panels).forEach(p=> p.style.display = 'none');
+      const configAreaElements = [adminCausesTA, adminActionsTA, adminTypesTA, adminResourceTypesTA, btnSaveMaster, adminToggleVotes, adminToggleBookmarks, masterSaveStatus];
+      configAreaElements.forEach(el => { if(el) el.closest ? el.closest('div')?.style.display = 'none' : el.style.display = 'none'; });
+      if(name === 'pending'){ adminPendingEl.style.display='block'; loadPendingForAdmin(); }
+      else if(name === 'rejected'){ adminRejectedEl.style.display='block'; loadAdminRejected(); }
+      else if(name === 'appeals'){ adminAppealsEl.style.display='block'; loadAdminAppeals(); }
+      else if(name === 'resources'){ adminResourcesEl.style.display='block'; loadAdminResources(); }
+      else if(name === 'analytics'){ adminAnalyticsEl.style.display='block'; loadAnalytics(); }
+      else if(name === 'configuration'){
+        if(adminCausesTA) adminCausesTA.closest('div')?.style.display = 'block';
+        if(adminActionsTA) adminActionsTA.closest('div')?.style.display = 'block';
+        if(adminTypesTA) adminTypesTA.closest('div')?.style.display = 'block';
+        if(adminResourceTypesTA) adminResourceTypesTA.closest('div')?.style.display = 'block';
+        if(btnSaveMaster) btnSaveMaster.style.display = 'inline-block';
+        if(adminToggleVotes) adminToggleVotes.closest('div')?.style.display = 'block';
+      } else if(name === 'logs'){
+        loadAdminLogs(); adminRejectedEl.style.display = 'block';
+      }
+    }
+
+    /* -------- Suggestions: hide after submit until refresh -------- */
+    btnSuggest.addEventListener('click', async ()=>{
+      if(!currentUser) return alert('Sign in to suggest');
+      const txt = (suggestText.value||'').trim();
+      if(!txt) return alert('Write suggestion');
+      try{
+        btnSuggest.disabled=true; suggestStatus.textContent='Sending...';
+        await db.collection('suggestions').add({ uid: currentUser.uid, text: txt, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        suggestStatus.textContent='Sent';
+        const suggestSection = btnSuggest.closest('.suggest-box') || document.querySelector('.suggest-box');
+        if(suggestSection) suggestSection.style.display = 'none';
+      }catch(e){ suggestStatus.textContent='Error'; console.error(e);} finally{ btnSuggest.disabled=false; }
+    });
+
+    /* -------- Routing & nav -------- */
+    navDashboard.addEventListener('click', ()=> location.hash = '#dashboard');
+    navProfile.addEventListener('click', ()=> location.hash = '#profile');
+    navMy.addEventListener('click', ()=> location.hash = '#my-submissions');
+    navResources.addEventListener('click', ()=> location.hash = '#resources');
+    navAdmin?.addEventListener('click', ()=> location.hash = '#admin');
+
+    window.addEventListener('hashchange', route);
+    function route(){
+      const hash = location.hash || '#dashboard';
+      ['dashboard-section','profile-section','my-submissions-section','resources-section','admin-section','submit-section'].forEach(id=>{ const e = document.getElementById(id); if(e) e.style.display = 'none'; });
+      if(hash==='#dashboard'){ document.getElementById('dashboard-section').style.display='block'; document.getElementById('submit-section').style.display='block'; loadDashboardFeed(); }
+      else if(hash==='#profile'){ document.getElementById('profile-section').style.display='block'; }
+      else if(hash==='#my-submissions'){ document.getElementById('my-submissions-section').style.display='block'; }
+      else if(hash==='#resources'){ document.getElementById('resources-section').style.display='block'; loadApprovedResources(); }
+      else if(hash==='#admin'){ document.getElementById('admin-section').style.display='block'; }
+      else { document.getElementById('dashboard-section').style.display='block'; document.getElementById('submit-section').style.display='block'; }
+    }
+
+    /* -------- Init -------- */
+    (async function init(){
+      await loadMasterLists();
+      await loadSettings();
+      document.addEventListener('click', (ev)=>{
+        if(!filterCausesPanel.contains(ev.target) && ev.target!==filterCausesBtn) filterCausesPanel.style.display='none';
+        if(!filterActionsPanel.contains(ev.target) && ev.target!==filterActionsBtn) filterActionsPanel.style.display='none';
+      });
+      filterCausesPanel.addEventListener('change', ()=> applyFiltersAndRender());
+      filterActionsPanel.addEventListener('change', ()=> applyFiltersAndRender());
+      loadDashboardFeed(); loadApprovedResources(); initAdminState();
+    })();
+
+    async function initAdminState(){ await loadSettings(); if(adminToggleVotes) adminToggleVotes.checked = !!settings.enableVotes; if(adminToggleBookmarks) adminToggleBookmarks.checked = !!settings.enableBookmarks; showAdminResourceFormForAdmins(); }
+
   </script>
 </body>
 </html>

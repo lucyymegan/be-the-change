@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin(uid) {
+      // Returns true if /admins/{uid}.enabled == true
+      return exists(/databases/$(database)/documents/admins/$(uid))
+             && get(/databases/$(database)/documents/admins/$(uid)).data.enabled == true;
+    }
+
+    // ----- admins collection (write only via console or admin account) -----
+    match /admins/{adminId} {
+      allow read: if isSignedIn() && isAdmin(request.auth.uid); // only admins can read admin list
+      // allow write only by existing admins (bootstrap: create via console)
+      allow create, update, delete: if isSignedIn() && isAdmin(request.auth.uid);
+    }
+
+    // ----- configuration & settings (master lists) -----
+    match /config/{doc} {
+      // allow read for everyone (UI needs this), but only admins can write
+      allow read: if true;
+      allow write: if isSignedIn() && isAdmin(request.auth.uid);
+    }
+
+    // ----- users collection -----
+    match /users/{userId} {
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      // read: owner or admin only (profiles are private by default)
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin(request.auth.uid));
+      // only allow user to modify their safe profile fields; admin may modify anything
+      allow update: if isSignedIn() && (
+          request.auth.uid == userId && 
+            // client may only write these keys
+            request.resource.data.keys().hasAll(['displayName','bio','avatarUrl','continent','tcsAccepted','preferredCauses']) &&
+            // prevent client from escalating by removing / adding unexpected fields
+            request.resource.data.keys().size() <= 6
+            || isAdmin(request.auth.uid)
+      );
+      // admin-only deletes
+      allow delete: if isSignedIn() && isAdmin(request.auth.uid);
+    }
+
+    // ----- submissions collection -----
+    match /submissions/{submissionId} {
+      // create: authenticated users; server expects uid==request.auth.uid; status must be 'pending'
+      allow create: if isSignedIn() 
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.email == request.auth.token.email
+                    && request.resource.data.status == 'pending'
+                    && request.resource.data.keys().hasAll(['text','tag','uid','email','timestamp','status'])
+                    && request.resource.data.text is string
+                    && request.resource.data.tag is string;
+
+      // read: approved items are public; pending/rejected only visible to owner or admin
+      allow get, list: if (
+          // public read of approved items
+          resource.data.status == 'approved'
+          || (isSignedIn() && (request.auth.uid == resource.data.uid || isAdmin(request.auth.uid)))
+      );
+
+      // update: owner may edit only while status == 'pending' and only change text/causes/actions
+      // admin may update any field (status, rejectionReason, moderationLog, etc.)
+      allow update: if isSignedIn() && (
+          // owner edits their own pending submission
+          (request.auth.uid == resource.data.uid && resource.data.status == 'pending'
+            && request.resource.data.uid == resource.data.uid // uid must not change
+            && request.resource.data.status == resource.data.status // status cannot be elevated by owner
+            && request.resource.data.keys().hasOnly(['text','causes','actions','tag','uid','email','timestamp','status']) )
+          // admins can update anything
+          || isAdmin(request.auth.uid)
+      );
+
+      // delete: owner may delete their own pending submissions; admins may delete any
+      allow delete: if isSignedIn() && ( isAdmin(request.auth.uid) || (request.auth.uid == resource.data.uid && resource.data.status == 'pending') );
+    }
+
+    // ----- appeals subcollection under submission -----
+    match /submissions/{submissionId}/appeals/{appealId} {
+      // only submission owner can create an appeal for that submission
+      allow create: if isSignedIn() && request.auth.uid == get(/databases/$(database)/documents/submissions/$(submissionId)).data.uid
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasAll(['uid','message','timestamp','status']);
+
+      // read: admins + submission owner
+      allow read: if isSignedIn() && ( request.auth.uid == get(/databases/$(database)/documents/submissions/$(submissionId)).data.uid || isAdmin(request.auth.uid) );
+
+      // admins resolve/update appeals
+      allow update, delete: if isSignedIn() && isAdmin(request.auth.uid);
+    }
+
+    // ----- resources collection (similar to submissions) -----
+    match /resources/{resourceId} {
+      // create: user can submit; admins can create approved directly
+      allow create: if isSignedIn()
+                    && request.resource.data.submittedBy == request.auth.uid
+                    && request.resource.data.keys().hasAll(['title','submittedBy','timestamp','resourceType','status'])
+                    && request.resource.data.title is string;
+
+      // read: approved resources are public; pending only to submitter and admins
+      allow get, list: if ( resource.data.status == 'approved' || (isSignedIn() && (request.auth.uid == resource.data.submittedBy || isAdmin(request.auth.uid))) );
+
+      // update: owner may edit only while status == 'pending' (safe fields); admins can update any field (approval)
+      allow update: if isSignedIn() && (
+          (request.auth.uid == resource.data.submittedBy && resource.data.status == 'pending' &&
+             request.resource.data.submittedBy == resource.data.submittedBy &&
+             request.resource.data.keys().hasOnly(['title','description','url','resourceType','causes','actions','submittedBy','timestamp','status'])
+          )
+          || isAdmin(request.auth.uid)
+      );
+
+      allow delete: if isSignedIn() && ( isAdmin(request.auth.uid) || (request.auth.uid == resource.data.submittedBy && resource.data.status == 'pending') );
+    }
+
+    // ----- votes subcollections under submissions/resources -----
+    match /{col}/{docId}/votes/{voterId} {
+      allow create: if isSignedIn()
+                    && (col == 'submissions' || col == 'resources')
+                    && request.auth.uid == voterId
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.timestamp is timestamp;
+      allow delete: if isSignedIn() && request.auth.uid == voterId;
+      allow read: if isSignedIn();
+      allow update: if false; // votes are add/delete only
+    }
+
+    // ----- bookmarks (per-user) -----
+    match /bookmarks/{userId}/items/{itemId} {
+      allow create, delete, read: if isSignedIn() && request.auth.uid == userId;
+      allow update: if false;
+    }
+
+    // ----- suggestions, suggestions are user-submitted -----
+    match /suggestions/{id} {
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.keys().hasAll(['uid','text','timestamp']);
+      allow read: if isSignedIn() && isAdmin(request.auth.uid); // keep suggestions admin-visible
+      allow update, delete: if isSignedIn() && isAdmin(request.auth.uid);
+    }
+
+    // ----- default deny -----
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
