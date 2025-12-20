@@ -54,6 +54,25 @@
 
   <div class="layout">
     <main class="main-content">
+
+      <!-- Authentication (put this in <main> before dashboard-section) -->
+      <section id="auth-section">
+        <strong>Sign up / Log in (Email)</strong>
+        <div class="row">
+          <div style="flex:1 1 260px">
+            <label>Email<input id="email" type="email" /></label>
+            <label>Password<input id="password" type="password" /></label>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="btn-signup" class="small-btn">Sign up</button>
+              <button id="btn-login" class="small-btn">Log in</button>
+            </div>
+          </div>
+          <div style="flex:1 1 260px">
+            <div class="small">After signing up, create an <code>admins/{UID}</code> document with <code>enabled:true</code> in Firestore to give admin access.</div>
+          </div>
+        </div>
+      </section>
+
       <!-- DASHBOARD -->
       <section id="dashboard-section">
         <strong>Dashboard — recent approved entries</strong>
@@ -859,6 +878,7 @@
         '#resources': ['resources-section'],
         '#admin': ['admin-section']
       };
+      
       const allIds = ['dashboard-section','profile-section','submit-section','admin-section','resources-section'];
       allIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
       // keep submit visible if logged in
